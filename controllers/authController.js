@@ -1,6 +1,7 @@
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import { oauth2Client } from "../utils/googleClient.js";
+import { getGoogleAuthUrl } from "../utils/googleAuthUrl.js";
 import Member from "../models/memberModel.js";
 
 /* GET Google Authentication API. */
@@ -31,16 +32,22 @@ export const googleAuth = async (req, res, next) => {
       expiresIn: process.env.JWT_TIMEOUT,
     });
 
-    res.status(200).json({
-      message: "success",
-      token,
-      user,
-    });
+    res.redirect(`http://localhost:5173/signup?token=${token}`);
   } catch (err) {
     console.error("Google Auth Error:", err?.message);
     console.error("Full Error:", err?.response?.data || err);
     res.status(500).json({
       message: "Internal Server Error",
     });
+  }
+};
+
+export const googleAuthUrl = async (req, res, next) => {
+  try {
+    const url = getGoogleAuthUrl();
+    res.status(200).json({ url });
+  } catch (error) {
+    console.error("Error generating Google Auth URL:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
