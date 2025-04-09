@@ -3,6 +3,18 @@ import jwt from "jsonwebtoken";
 import { oauth2Client } from "../utils/googleClient.js";
 import { getGoogleAuthUrl } from "../utils/googleAuthUrl.js";
 import Member from "../models/memberModel.js";
+import { redisClient } from "../services/redisClient.js";
+import bcrypt from "bcrypt";
+
+const generateToken = (member) => {
+  return jwt.sign(
+    { _id: member._id, email: member.email },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_TIMEOUT,
+    }
+  );
+};
 
 /* GET Google Authentication API. */
 export const googleAuth = async (req, res, next) => {
@@ -49,5 +61,105 @@ export const googleAuthUrl = async (req, res, next) => {
   } catch (error) {
     console.error("Error generating Google Auth URL:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Signup Controller
+export const signup = async (req, res) => {
+  try {
+    const { name, email, password, confirmPassword } = req.body;
+    // Basic validation
+    if (!name || !email || !password || !confirmPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+    // Check if user exists
+    const existingUser = await Member.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // Create user
+    const member = await Member.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    // Generate token
+    const token = generateToken(member);
+    // Set token in HttpOnly cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // only over HTTPS in production
+      sameSite: "lax",
+      maxAge: 3600000, // e.g., 1 hour in milliseconds
+    });
+    return res.status(201).json({ message: "Signup successful", user: member });
+  } catch (error) {
+    console.error("Signup error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Login Controller
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    // Basic validation
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+    // Find user by email
+    const member = await Member.findOne({ email });
+    if (!member) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    // Compare password
+    const isMatch = await bcrypt.compare(password, member.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    // Generate token
+    const token = generateToken(member);
+    // Set token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 3600000,
+    });
+    return res.status(200).json({ message: "Login successful", user: member });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Logout Controller ( using Redis token blacklisting)
+export const logout = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    console.log("Token:", token, "Type:", typeof token);
+
+    if (token) {
+      const redisKey = "bl_" + String(token);
+      console.log("Blacklisting token with key:", redisKey);
+
+      const keyStr = String(redisKey);
+      const tokenStr = String(token);
+
+      await redisClient.set(keyStr, tokenStr, { EX: 3600 });
+    }
+
+    res.clearCookie("token");
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
