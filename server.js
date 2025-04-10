@@ -15,8 +15,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // only allow your frontend origin
-    credentials: true, // allow cookies to be sent
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
 
@@ -28,10 +28,10 @@ const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.on("error", (err) => console.error("Redis error", err));
 await redisClient.connect();
 
-// Rate limiting – 5 request per 15 minutes we will modify when sent to production once
+// Rate limiting – 95 request per 15 minutes we will modify when sent to production once
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 15,
+  max: 95,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 

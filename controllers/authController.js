@@ -16,7 +16,7 @@ const generateToken = (member) => {
   );
 };
 
-/* GET Google Authentication API. */
+// Google Authentication API.
 export const googleAuth = async (req, res, next) => {
   const code = req.query.code;
 
@@ -44,6 +44,15 @@ export const googleAuth = async (req, res, next) => {
       expiresIn: process.env.JWT_TIMEOUT,
     });
 
+    // token in an HttpOnly cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 3600000, // e.g., 1 hour
+    });
+
+    //  you can also pass the token in the URL if needed waise not recommoneded but its fine for now
     res.redirect(`http://localhost:5173/signup?token=${token}`);
   } catch (err) {
     console.error("Google Auth Error:", err?.message);
@@ -161,5 +170,29 @@ export const logout = async (req, res) => {
   } catch (error) {
     console.error("Logout error:", error);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//For cookie rehydration check it checks for token and the auth status
+export const checkAuth = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await Member.findById(decoded._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({
+      token,
+      user,
+      message: "Authentication verified",
+    });
+  } catch (error) {
+    console.error("Auth verification error:", error);
+    return res.status(401).json({ message: "Not authenticated" });
   }
 };
