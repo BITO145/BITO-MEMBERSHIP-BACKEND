@@ -10,7 +10,7 @@ export const enrollMemberInChapter = async (req, res) => {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    if (memberFull.membershipLevel === "free") {
+    if (!memberFull.membershipLevel || memberFull.membershipLevel === "free") {
       return res.status(403).json({
         error: "Your membership level does not allow enrollment in chapters.",
       });
@@ -23,8 +23,9 @@ export const enrollMemberInChapter = async (req, res) => {
       { $addToSet: { chaptersEnrolled: chapterId } },
       { new: true }
     );
+
     // Call HMRS portal to update chapter's member list
-    const hmrsApiUrl = `http://localhost:8000/api/chapters/${chapterId}/enrollMember`;
+    const hmrsApiUrl = `http://localhost:5000/sa/chapters/${chapterId}/enrollMember`;
     await axios.post(hmrsApiUrl, { memberId });
 
     res.status(200).json({
