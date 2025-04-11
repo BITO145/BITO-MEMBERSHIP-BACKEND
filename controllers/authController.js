@@ -96,6 +96,7 @@ export const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      membershipLevel: "basic",
     });
     // Generate token
     const token = generateToken(member);

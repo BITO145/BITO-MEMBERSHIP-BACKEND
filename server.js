@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoute.js";
+import enrollRoutes from "./routes/enrollmentRoute.js";
 import connectDB from "./db/db.js";
 import rateLimit from "express-rate-limit";
 import { createClient } from "redis";
@@ -15,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5000"],
     credentials: true,
   })
 );
@@ -37,6 +38,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api/", apiLimiter);
 app.use("/auth", apiLimiter, authRoutes);
+app.use("/member", apiLimiter, enrollRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8080;

@@ -29,6 +29,10 @@ const memberSchema = new mongoose.Schema({
   chapterId: {
     type: String,
   },
+  chaptersEnrolled: {
+    type: [String],
+    default: [],
+  },
   membershipExpiryDate: {
     type: Date,
   },
