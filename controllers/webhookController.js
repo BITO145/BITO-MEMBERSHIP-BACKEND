@@ -1,10 +1,8 @@
-import eventModel from "../models/eventModel.js";  // Assuming you have an Event model
-import chapterModel from "../models/chapterModel.js";  // Assuming you have a Chapter model
+import Event from "../models/eventModel.js";
 
 // Receive and process the event data from the admin-side webhook
 export const receiveEventWebhook = async (req, res) => {
   try {
-    // Extract event data from the request body
     const {
       eventName,
       eventStartTime,
@@ -13,24 +11,27 @@ export const receiveEventWebhook = async (req, res) => {
       location,
       description,
       membershipRequired,
-      chapter,  // chapter ID from the request body
+      chapter, // still stored in event for reference
+      createdBy,
     } = req.body;
 
     // Validate required fields
-    if (!eventName || !eventStartTime || !eventEndTime || !eventDate || !location || !chapter) {
+    if (
+      !eventName ||
+      !eventStartTime ||
+      !eventEndTime ||
+      !eventDate ||
+      !location ||
+      !chapter
+    ) {
       return res.status(400).json({
-        error: "Please provide eventName, eventStartTime, eventEndTime, eventDate, location, and chapter.",
+        error:
+          "Please provide eventName, eventStartTime, eventEndTime, eventDate, location, and chapter.",
       });
     }
 
-    // Check if the chapter exists
-    const chapterDoc = await chapterModel.findById(chapter);
-    if (!chapterDoc) {
-      return res.status(404).json({ error: "Chapter not found." });
-    }
-
-    // Create the event in the database (user-side)
-    const newEvent = await eventModel.create({
+    // Save the event directly
+    const newEvent = await Event.create({
       eventName,
       eventStartTime,
       eventEndTime,
@@ -39,16 +40,9 @@ export const receiveEventWebhook = async (req, res) => {
       description,
       membershipRequired,
       chapter,
+      createdBy,
     });
 
-    // Update the Chapter document to include the new event's ID
-    await chapterModel.findByIdAndUpdate(
-      chapter,
-      { $push: { events: newEvent._id } },
-      { new: true }
-    );
-
-    // Respond with success
     res.status(201).json({
       message: "Event successfully received and added.",
       event: newEvent,
