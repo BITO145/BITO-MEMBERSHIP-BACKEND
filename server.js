@@ -8,7 +8,7 @@ import connectDB from "./db/db.js";
 import rateLimit from "express-rate-limit";
 import { createClient } from "redis";
 import webhookRoutes from "./routes/webhookRoutes.js";
-
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -42,7 +42,7 @@ app.use("/api/", apiLimiter);
 app.use("/auth", apiLimiter, authRoutes);
 app.use("/member", apiLimiter, enrollRoutes);
 app.use("/webhook", webhookRoutes);
-
+app.use("/receive", userRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8080;
