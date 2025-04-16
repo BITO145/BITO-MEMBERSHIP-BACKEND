@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import { redisClient } from "../services/redisClient.js";
 
+// console.log(process.env.JWT_SECRET);
+
 export const protect = async (req, res, next) => {
   try {
     const token = req.cookies.token;

@@ -44,6 +44,12 @@ const memberSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  eventsEnrolled: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
   connection: {
     type: String,
   },

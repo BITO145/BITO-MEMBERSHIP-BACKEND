@@ -2,8 +2,9 @@ import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import { redisClient } from "../services/redisClient.js";
 
-export const getEvents = async (req, res) => {
+export const getEvents = async (req, res, next) => {
   try {
+    // Try to get events from cache first
     const cachedEvents = await redisClient.get("events");
     if (cachedEvents) {
       console.log("Cache hit for events.");
@@ -11,8 +12,21 @@ export const getEvents = async (req, res) => {
     }
 
     console.log("Cache miss for events. Querying the database.");
-    const events = await Event.find({}).sort({ eventDate: 1 });
 
+    // Get the current date/time (be mindful of timezone requirements)
+    const currentDate = new Date();
+
+    // Query events that have eventDate on or after today, and sort them in ascending order
+    const events = await Event.find({ eventDate: { $gte: currentDate } }).sort({
+      eventDate: 1,
+    });
+
+    // If no events are found, send a message
+    if (events.length === 0) {
+      return res.status(200).json({ message: "No upcoming events" });
+    }
+
+    // Cache the result in Redis for 60 seconds
     await redisClient.setEx("events", 60, JSON.stringify(events));
     console.log("Events cached in Redis.");
 

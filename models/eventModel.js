@@ -28,7 +28,7 @@ const eventSchema = new mongoose.Schema(
     membershipRequired: {
       type: String,
       required: true,
-      enum: ["free", "memba", "b", "c", "d"], // you can adjust as per your business logic
+      enum: ["free", "silver", "gold", "diamond", "platinum"],
       default: "free",
     },
     chapter: {
