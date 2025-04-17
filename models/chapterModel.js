@@ -13,6 +13,12 @@ const chapterSchema = new mongoose.Schema(
     description: { type: String },
     chapterLeadName: { type: String, required: true },
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+    members: [
+      {
+        memberId: { type: String, required: true }, // HMRS member ID
+        name: { type: String, required: true }, // optional
+      },
+    ],
   },
   { timestamps: true }
 );

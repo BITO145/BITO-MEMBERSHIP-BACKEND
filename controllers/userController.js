@@ -2,37 +2,42 @@ import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import { redisClient } from "../services/redisClient.js";
 
+// controllers/eventController.js
 export const getEvents = async (req, res, next) => {
   try {
-    // Try to get events from cache first
-    const cachedEvents = await redisClient.get("events");
-    if (cachedEvents) {
-      console.log("Cache hit for events.");
-      return res.status(200).json({ events: JSON.parse(cachedEvents) });
+    const cached = await redisClient.get("events");
+    if (cached) {
+      return res.status(200).json({ events: JSON.parse(cached) });
     }
 
-    console.log("Cache miss for events. Querying the database.");
+    const today = new Date();
 
-    // Get the current date/time (be mindful of timezone requirements)
-    const currentDate = new Date();
+    // We tell Mongoose:
+    //  • path: "chapter"        ← the field on Event
+    //  • model: "Chapter"       ← which collection to pull from
+    //  • localField: "chapter"  ← Event.chapter holds the HMRS ID
+    //  • foreignField: "hmrsChapterId" ← Chapter.hmrsChapterId is the same HMRS ID
+    //  • justOne: true          ← we expect a single sub‑doc, not an array
+    //  • select: "chapterName"  ← only bring in the name
+    const events = await Event.find({ eventDate: { $gte: today } })
+      .sort({ eventDate: 1 })
+      .populate({
+        path: "chapter",
+        model: "Chapter",
+        localField: "chapter",
+        foreignField: "hmrsChapterId",
+        justOne: true,
+        select: "chapterName",
+      });
 
-    // Query events that have eventDate on or after today, and sort them in ascending order
-    const events = await Event.find({ eventDate: { $gte: currentDate } }).sort({
-      eventDate: 1,
-    });
-
-    // If no events are found, send a message
     if (events.length === 0) {
       return res.status(200).json({ message: "No upcoming events" });
     }
 
-    // Cache the result in Redis for 60 seconds
     await redisClient.setEx("events", 60, JSON.stringify(events));
-    console.log("Events cached in Redis.");
-
     res.status(200).json({ events });
-  } catch (error) {
-    console.error("Error fetching events:", error);
+  } catch (err) {
+    console.error("Error fetching events:", err);
     res.status(500).json({ error: "Server error fetching events." });
   }
 };

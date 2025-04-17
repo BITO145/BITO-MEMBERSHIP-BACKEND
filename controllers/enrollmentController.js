@@ -27,10 +27,16 @@ export const enrollMemberInChapter = async (req, res) => {
     );
 
     const payload = {
-      memberId,
+      memberId: memberFull._id.toString(),
       name: memberFull.name,
       email: memberFull.email,
     };
+
+    await Chapter.findOneAndUpdate(
+      { hmrsChapterId: chapterId },
+      { $addToSet: { members: payload } },
+      { new: true }
+    );
     // Call HMRS portal to update chapter's member list
     const hmrsApiUrl = `http://localhost:5000/sa/chapters/${chapterId}/enrollMember`;
     await axios.post(hmrsApiUrl, payload, {
