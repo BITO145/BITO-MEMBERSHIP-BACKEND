@@ -26,6 +26,6 @@ router.post("/login", login);
 router.post("/logout", protect, logout);
 
 //check Auth
-router.get("/me", checkAuth);
+router.get("/me", protect, checkAuth);
 
 export default router;

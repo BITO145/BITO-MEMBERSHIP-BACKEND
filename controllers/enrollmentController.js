@@ -26,10 +26,17 @@ export const enrollMemberInChapter = async (req, res) => {
       { new: true }
     );
 
+    const payload = {
+      memberId,
+      name: memberFull.name,
+      email: memberFull.email,
+    };
     // Call HMRS portal to update chapter's member list
     const hmrsApiUrl = `http://localhost:5000/sa/chapters/${chapterId}/enrollMember`;
-    await axios.post(hmrsApiUrl, { memberId });
-
+    await axios.post(hmrsApiUrl, payload, {
+      withCredentials: true, // if HMRS needs your auth cookie
+      headers: { "Content-Type": "application/json" },
+    });
     res.status(200).json({
       message: "Enrollment in chapter successful.",
       member: updatedMember,
