@@ -8,43 +8,52 @@ const hmrsUrl = process.env.HMRS_URL;
 export const enrollMemberInChapter = async (req, res) => {
   try {
     const memberId = req.user._id;
-    const memberFull = await Member.findById(memberId);
-    console.log(memberFull);
-    if (!memberFull) {
+    const { chapterId } = req.body;
+
+    // Step 1: Fetch Member
+    const member = await Member.findById(memberId).lean();
+    if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    if (!memberFull.membershipLevel || memberFull.membershipLevel === "free") {
+    // Step 2: Check Membership Level
+    if (!member.membershipLevel || member.membershipLevel === "free") {
       return res.status(403).json({
         error: "Your membership level does not allow enrollment in chapters.",
       });
     }
 
-    const { chapterId } = req.body;
-
+    // Step 3: Update Member's enrolled chapters
     const updatedMember = await Member.findByIdAndUpdate(
       memberId,
       { $addToSet: { chaptersEnrolled: chapterId } },
       { new: true }
     );
 
+    // Step 4: Prepare payload
     const payload = {
-      memberId: memberFull._id.toString(),
-      name: memberFull.name,
-      email: memberFull.email,
+      memberId: member._id.toString(),
+      name: member.name,
+      email: member.email,
     };
 
+    // Step 5: Update chapter’s member list
     await Chapter.findOneAndUpdate(
       { hmrsChapterId: chapterId },
-      { $addToSet: { members: payload } },
-      { new: true }
+      { $addToSet: { members: payload } }
     );
-    // Call HMRS portal to update chapter's member list
-    const hmrsApiUrl = `${hmrsUrl}/sa/chapters/${chapterId}/enrollMember`;
-    await axios.post(hmrsApiUrl, payload, {
-      withCredentials: true, // if HMRS needs your auth cookie
-      headers: { "Content-Type": "application/json" },
-    });
+
+    // Step 6: Notify HMRS portal
+    await axios.post(
+      `${hmrsUrl}/sa/chapters/${chapterId}/enrollMember`,
+      payload,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+
+    // Step 7: Send success response
     res.status(200).json({
       message: "Enrollment in chapter successful.",
       member: updatedMember,
