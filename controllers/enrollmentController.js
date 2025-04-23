@@ -4,7 +4,7 @@ import Chapter from "../models/chapterModel.js";
 import axios from "axios";
 
 const hmrsUrl = process.env.HMRS_URL;
-console.log(hmrsUrl);
+
 export const enrollMemberInChapter = async (req, res) => {
   try {
     const memberId = req.user._id;
