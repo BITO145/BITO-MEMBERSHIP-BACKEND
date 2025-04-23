@@ -3,6 +3,8 @@ import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import axios from "axios";
 
+const hmrsUrl = process.env.HMRS_URL;
+console.log(hmrsUrl);
 export const enrollMemberInChapter = async (req, res) => {
   try {
     const memberId = req.user._id;
@@ -38,7 +40,7 @@ export const enrollMemberInChapter = async (req, res) => {
       { new: true }
     );
     // Call HMRS portal to update chapter's member list
-    const hmrsApiUrl = `http://localhost:5000/sa/chapters/${chapterId}/enrollMember`;
+    const hmrsApiUrl = `${hmrsUrl}/sa/chapters/${chapterId}/enrollMember`;
     await axios.post(hmrsApiUrl, payload, {
       withCredentials: true, // if HMRS needs your auth cookie
       headers: { "Content-Type": "application/json" },

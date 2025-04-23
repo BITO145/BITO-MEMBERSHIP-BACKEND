@@ -1,11 +1,17 @@
 import express from "express";
-import { getChapters, getEvents } from "../controllers/userController.js";
+import {
+  getChapters,
+  getEvents,
+  getMembersCount,
+} from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/events", protect, getEvents);
 
-router.get("/chapters", getChapters);
+router.get("/chapters", protect, getChapters);
+
+router.get("/members", getMembersCount);
 
 export default router;

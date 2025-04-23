@@ -1,5 +1,6 @@
 import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
+import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
 
 // controllers/eventController.js
@@ -60,5 +61,15 @@ export const getChapters = async (req, res) => {
   } catch (error) {
     console.error("Error fetching chapters:", error);
     res.status(500).json({ error: "Server error fetching chapters." });
+  }
+};
+
+export const getMembersCount = async (req, res) => {
+  try {
+    const count = await Member.countDocuments();
+    res.json({ count });
+  } catch (err) {
+    console.error("Error fetching member count:", err);
+    res.status(500).json({ message: "Unable to retrieve member count" });
   }
 };
