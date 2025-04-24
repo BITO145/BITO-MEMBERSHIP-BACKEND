@@ -16,6 +16,9 @@ const generateToken = (member) => {
   );
 };
 
+const frontend = process.env.FRONTEND_URL;
+console.log(frontend);
+
 // Google Authentication API.
 export const googleAuth = async (req, res, next) => {
   const code = req.query.code;
@@ -48,12 +51,13 @@ export const googleAuth = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 3600000, // e.g., 1 hour
     });
 
     //  you can also pass the token in the URL if needed waise not recommoneded but its fine for now
-    res.redirect(`http://localhost:5173/signup?token=${token}`);
+    res.redirect(`${frontend}/signup?token=${token}`);
   } catch (err) {
     console.error("Google Auth Error:", err?.message);
     console.error("Full Error:", err?.response?.data || err);
@@ -104,7 +108,8 @@ export const signup = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // only over HTTPS in production
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 3600000, // e.g., 1 hour in milliseconds
     });
     return res.status(201).json({ message: "Signup successful", user: member });
@@ -140,7 +145,8 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 3600000,
     });
     return res.status(200).json({ message: "Login successful", user: member });
