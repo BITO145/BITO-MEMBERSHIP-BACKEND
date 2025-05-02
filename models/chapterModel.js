@@ -15,8 +15,14 @@ const chapterSchema = new mongoose.Schema(
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
     members: [
       {
-        memberId: { type: String, required: true }, // HMRS member ID
-        name: { type: String, required: true }, // optional
+        memberId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Member",
+          required: true,
+        },
+        name: { type: String, required: true },
+        email: { type: String, required: true },
+        role: { type: String, required: true },
       },
     ],
   },

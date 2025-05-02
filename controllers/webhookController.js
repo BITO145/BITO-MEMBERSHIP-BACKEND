@@ -1,5 +1,6 @@
 import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
+import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
 
 export const receiveEventWebhook = async (req, res) => {
@@ -132,5 +133,49 @@ export const receiveChapterWebhook = async (req, res) => {
   } catch (error) {
     console.error("Error processing chapter webhook:", error);
     res.status(500).json({ error: "Server error while processing chapter." });
+  }
+};
+
+//receive memberole hook
+export const updateMemberRole = async (req, res) => {
+  try {
+    const { memberId, chapterId, newRole } = req.body;
+    if (!memberId || !chapterId || !newRole) {
+      return res
+        .status(400)
+        .json({ error: "memberId, chapterId and newRole are required" });
+    }
+
+    // 1) Update the user’s chapterMemberships entry:
+    const updatedUser = await Member.findOneAndUpdate(
+      { _id: memberId, "chapterMemberships.chapterId": chapterId },
+      { $set: { "chapterMemberships.$.role": newRole } },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ error: "User or chapter membership not found" });
+    }
+
+    // 2) Update the Chapter’s local members array:
+    const updatedChapter = await Chapter.updateOne(
+      { hmrsChapterId: chapterId, "members.memberId": memberId },
+      { $set: { "members.$.role": newRole } }
+    );
+    if (!updatedChapter.modifiedCount) {
+      return res.status(404).json({ error: "Chapter membership not found" });
+    }
+
+    return res.status(200).json({
+      message: "Role updated for that user–chapter pair",
+      user: updatedUser,
+      chapterUpdate: updatedChapter,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: error.message || "Server error during role update" });
   }
 };

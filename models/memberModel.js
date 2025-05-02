@@ -22,17 +22,21 @@ const memberSchema = new mongoose.Schema({
   membershipLevel: {
     type: String,
   },
-  role: {
-    type: String,
-    default: "member",
-  },
-  chapterId: {
-    type: String,
-  },
-  chaptersEnrolled: {
-    type: [String],
-    default: [],
-  },
+  chapterMemberships: [
+    {
+      chapterId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Chapter",
+        required: true,
+      },
+      role: {
+        type: String,
+        enum: ["member", "committee"],
+        default: "member",
+      },
+      dateOfJoining: { type: Date, default: Date.now },
+    },
+  ],
   membershipExpiryDate: {
     type: Date,
   },

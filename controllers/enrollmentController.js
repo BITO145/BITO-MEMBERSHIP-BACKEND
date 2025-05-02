@@ -23,27 +23,36 @@ export const enrollMemberInChapter = async (req, res) => {
       });
     }
 
-    // Step 3: Update Member's enrolled chapters
+    // Step 3: Update Member's chapterMemberships array
     const updatedMember = await Member.findByIdAndUpdate(
       memberId,
-      { $addToSet: { chaptersEnrolled: chapterId } },
+      {
+        $addToSet: {
+          chapterMemberships: {
+            chapterId,
+            role: "member", // default at enrollment
+            dateOfJoining: new Date(),
+          },
+        },
+      },
       { new: true }
     );
 
-    // Step 4: Prepare payload
+    // Step 4: Prepare the payload (with explicit role!)
     const payload = {
-      memberId: member._id.toString(),
-      name: member.name,
-      email: member.email,
+      memberId: updatedMember._id,
+      name: updatedMember.name,
+      email: updatedMember.email,
+      role: "member",
     };
 
-    // Step 5: Update chapter’s member list
+    // Step 5: Add to Chapter.members sub-document
     await Chapter.findOneAndUpdate(
       { hmrsChapterId: chapterId },
       { $addToSet: { members: payload } }
     );
 
-    // Step 6: Notify HMRS portal
+    // Step 6: Notify HMRS portal (unchanged sensitive functionality)
     await axios.post(
       `${hmrsUrl}/sa/chapters/${chapterId}/enrollMember`,
       payload,
@@ -66,16 +75,16 @@ export const enrollMemberInChapter = async (req, res) => {
 
 export const enrollMemberInEvent = async (req, res) => {
   try {
-    // Get the authenticated member's ID from req.user (set by auth middleware)
     const memberId = req.user._id;
+    const { eventId } = req.body;
 
-    // Retrieve the full member document.
+    // Fetch member
     const member = await Member.findById(memberId).lean();
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // Check if the member's membership level allows event enrollment.
+    // Check membership level
     const allowedLevels = ["gold", "diamond", "platinum"];
     if (!allowedLevels.includes(member.membershipLevel)) {
       return res.status(403).json({
@@ -83,20 +92,16 @@ export const enrollMemberInEvent = async (req, res) => {
       });
     }
 
-    // Get eventId from request body.
-    const { eventId } = req.body;
+    // Validate eventId
     if (!eventId) {
       return res.status(400).json({ error: "eventId is required" });
     }
 
-    // Check that the event exists.
+    // Fetch event and its chapter
     const event = await Event.findById(eventId).lean();
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
-
-    // Ensure the event is associated with a valid chapter.
-    // Here, event.chapter should hold the HMRS Chapter ID.
     const chapterDoc = await Chapter.findOne({
       hmrsChapterId: event.chapter,
     }).lean();
@@ -106,20 +111,18 @@ export const enrollMemberInEvent = async (req, res) => {
       });
     }
 
-    // *** Additional Check: Verify the member is already registered in the event's chapter ***
-    // We assume that member.chaptersEnrolled contains the HMRS chapter IDs that the member is registered in.
-    // Convert both values to strings to ensure proper comparison.
-    const enrolledChapters = (member.chaptersEnrolled || []).map((ch) =>
-      ch.toString()
+    // ——— NEW: check membership via chapterMemberships ———
+    const enrolledChapterIds = (member.chapterMemberships || []).map((cm) =>
+      cm.chapterId.toString()
     );
-    if (!enrolledChapters.includes(chapterDoc.hmrsChapterId.toString())) {
+    if (!enrolledChapterIds.includes(chapterDoc.hmrsChapterId.toString())) {
       return res.status(400).json({
         error:
           "You are not registered in the corresponding chapter. Please register for the chapter before enrolling in an event.",
       });
     }
 
-    // Check if the member is already registered for this event.
+    // Prevent double-enrollment
     const enrolledEvents = (member.eventsEnrolled || []).map((ev) =>
       ev.toString()
     );
@@ -129,9 +132,7 @@ export const enrollMemberInEvent = async (req, res) => {
         .json({ error: "User is already registered for this event." });
     }
 
-    // Update the member document:
-    // - Add the eventId to eventsEnrolled using $addToSet (to avoid duplicates)
-    // - Increment the noOfEventsAttended counter by 1.
+    // Enroll in event
     const updatedMember = await Member.findByIdAndUpdate(
       memberId,
       {
@@ -141,12 +142,12 @@ export const enrollMemberInEvent = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Enrollment in event successful.",
       member: updatedMember,
     });
   } catch (error) {
     console.error("Enrollment in event error:", error);
-    res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 };
