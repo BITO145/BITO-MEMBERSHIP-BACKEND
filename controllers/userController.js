@@ -64,8 +64,9 @@ export const getChapters = async (req, res) => {
     }
 
     console.log("Cache miss for chapters. Querying the database.");
-    const chapters = await Chapter.find({}).sort({ createdAt: -1 });
-
+    const chapters = await Chapter.find({})
+      .populate("events") // 👈 Add populate here
+      .sort({ createdAt: -1 });
     await redisClient.setEx("chapters", 30, JSON.stringify(chapters));
     console.log("Chapters cached in Redis.");
 
