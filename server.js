@@ -39,7 +39,7 @@ await redisClient.connect();
 // Rate limiting – 95 request per 15 minutes we will modify when sent to production once
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 295,
+  max: 395,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 

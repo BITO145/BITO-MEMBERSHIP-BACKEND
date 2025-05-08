@@ -45,19 +45,39 @@ export const getEvents = async (req, res, next) => {
 
 export const getChapters = async (req, res) => {
   try {
+    const userId = req.user._id; // 👈 Get current logged-in user ID
+
     const cachedChapters = await redisClient.get("chapters");
     if (cachedChapters) {
       console.log("Cache hit for chapters.");
-      return res.status(200).json({ chapters: JSON.parse(cachedChapters) });
+      const chapters = JSON.parse(cachedChapters);
+
+      // ✅ Enrich with isMember dynamically
+      const enrichedChapters = chapters.map((chapter) => {
+        const isMember = chapter.members.some(
+          (member) => member.memberId.toString() === userId.toString()
+        );
+        return { ...chapter, isMember };
+      });
+
+      return res.status(200).json({ chapters: enrichedChapters });
     }
 
     console.log("Cache miss for chapters. Querying the database.");
     const chapters = await Chapter.find({}).sort({ createdAt: -1 });
 
-    await redisClient.setEx("chapters", 60, JSON.stringify(chapters));
+    await redisClient.setEx("chapters", 30, JSON.stringify(chapters));
     console.log("Chapters cached in Redis.");
 
-    res.status(200).json({ chapters });
+    // ✅ Enrich with isMember dynamically
+    const enrichedChapters = chapters.map((chapter) => {
+      const isMember = chapter.members.some(
+        (member) => member.memberId.toString() === userId.toString()
+      );
+      return { ...chapter.toObject(), isMember }; // Ensure it's a plain object
+    });
+
+    res.status(200).json({ chapters: enrichedChapters });
   } catch (error) {
     console.error("Error fetching chapters:", error);
     res.status(500).json({ error: "Server error fetching chapters." });

@@ -17,7 +17,6 @@ const generateToken = (member) => {
 };
 
 const frontend = process.env.FRONTEND_URL;
-console.log(frontend);
 
 // Google Authentication API.
 export const googleAuth = async (req, res, next) => {
@@ -39,6 +38,7 @@ export const googleAuth = async (req, res, next) => {
         name,
         email,
         image: picture,
+        membershipLevel: "basic",
       });
     }
 
