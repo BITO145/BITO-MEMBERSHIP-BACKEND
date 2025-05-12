@@ -94,3 +94,37 @@ export const getMembersCount = async (req, res) => {
     res.status(500).json({ message: "Unable to retrieve member count" });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log("this is user id", userId);
+    const { phone, about, nationality, country, businessSector } = req.body;
+
+    const updatedUser = await Member.findByIdAndUpdate(
+      userId,
+      {
+        phone,
+        about,
+        nationality,
+        country,
+        businessSector,
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({
+      error: "An error occurred while updating the profile",
+    });
+  }
+};

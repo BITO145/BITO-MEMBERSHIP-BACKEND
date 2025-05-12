@@ -65,6 +65,18 @@ const memberSchema = new mongoose.Schema({
   image: {
     type: String,
   },
+  nationality: {
+    type: String,
+  },
+  businessSector: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  about: {
+    type: String,
+  },
 });
 
 const Member = mongoose.model("Member", memberSchema);

@@ -17,7 +17,7 @@ export const enrollMemberInChapter = async (req, res) => {
     }
 
     // Step 2: Check Membership Level
-    if (!member.membershipLevel || member.membershipLevel === "free") {
+    if (!member.membershipLevel || member.membershipLevel === "basic") {
       return res.status(403).json({
         error: "Your membership level does not allow enrollment in chapters.",
       });
