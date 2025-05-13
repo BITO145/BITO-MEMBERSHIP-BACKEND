@@ -23,7 +23,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 
 //logout
-router.post("/logout", protect, logout);
+router.get("/logout", protect, logout);
 
 //check Auth
 router.get("/me", protect, checkAuth);
