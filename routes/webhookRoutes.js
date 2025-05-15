@@ -3,6 +3,7 @@ import {
   receiveEventWebhook,
   receiveChapterWebhook,
   updateMemberRole,
+  deleteChapter,
 } from "../controllers/webhookController.js";
 
 const router = express.Router();
@@ -15,5 +16,8 @@ router.post("/chapters/receive", receiveChapterWebhook);
 
 // Webhook route to update member's role
 router.post("/updateRole", updateMemberRole);
+
+// Delete Webhook Chapter
+router.post("/deleteChapter", deleteChapter);
 
 export default router;

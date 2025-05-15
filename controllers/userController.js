@@ -35,7 +35,7 @@ export const getEvents = async (req, res, next) => {
       return res.status(200).json({ message: "No upcoming events" });
     }
 
-    await redisClient.setEx("events", 60, JSON.stringify(events));
+    await redisClient.setEx("events", 10, JSON.stringify(events));
     res.status(200).json({ events });
   } catch (err) {
     console.error("Error fetching events:", err);

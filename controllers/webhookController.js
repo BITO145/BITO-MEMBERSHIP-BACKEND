@@ -3,6 +3,7 @@ import Chapter from "../models/chapterModel.js";
 import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
 
+// receive event webhook
 export const receiveEventWebhook = async (req, res) => {
   try {
     const {
@@ -177,5 +178,39 @@ export const updateMemberRole = async (req, res) => {
     res
       .status(500)
       .json({ error: error.message || "Server error during role update" });
+  }
+};
+
+//receive delete chapter
+export const deleteChapter = async (req, res) => {
+  const { hmrsChapterId } = req.body;
+
+  if (!hmrsChapterId) {
+    return res.status(400).json({ error: "hmrsChapterId is required." });
+  }
+
+  try {
+    // Step 1: Find the Chapter with this hmrsChapterId
+    const chapter = await Chapter.findOne({ hmrsChapterId });
+
+    if (!chapter) {
+      return res.status(404).json({ error: "Chapter not found." });
+    }
+
+    console.log(
+      "🟢 Deleting chapter with hmrsChapterId (used in members):",
+      chapter.hmrsChapterId
+    );
+
+    // Step 2: Delete the chapter itself
+    await Chapter.deleteOne({ _id: chapter._id });
+    console.log("✅ Chapter deleted from Chapter collection.");
+
+    res.status(200).json({
+      message: `Chapter with hmrsChapterId ${hmrsChapterId} deleted successfully.`,
+    });
+  } catch (err) {
+    console.error("❌ Error deleting chapter:", err);
+    res.status(500).json({ error: "Internal server error." });
   }
 };
