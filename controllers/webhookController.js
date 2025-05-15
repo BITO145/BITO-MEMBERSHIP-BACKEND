@@ -1,12 +1,14 @@
 import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import Member from "../models/memberModel.js";
+import { Types } from "mongoose";
 import { redisClient } from "../services/redisClient.js";
 
 // receive event webhook
 export const receiveEventWebhook = async (req, res) => {
   try {
     const {
+      hmrsEventId, // ✅ admin's event ID
       eventName,
       eventStartTime,
       eventEndTime,
@@ -14,12 +16,13 @@ export const receiveEventWebhook = async (req, res) => {
       location,
       description,
       membershipRequired,
-      chapter, // HMRS chapter ID
+      chapter, // ✅ admin's chapter ID = hmrsChapterId
       createdBy,
     } = req.body;
 
     // Validate required fields
     if (
+      !hmrsEventId ||
       !eventName ||
       !eventStartTime ||
       !eventEndTime ||
@@ -29,57 +32,63 @@ export const receiveEventWebhook = async (req, res) => {
     ) {
       return res.status(400).json({
         error:
-          "Please provide eventName, eventStartTime, eventEndTime, eventDate, location, and chapter.",
+          "Please provide hmrsEventId, eventName, eventStartTime, eventEndTime, eventDate, location, and chapter.",
       });
     }
 
-    // Create the event document in the Membership portal
-    const newEvent = await Event.create({
-      eventName,
-      eventStartTime,
-      eventEndTime,
-      eventDate,
-      location,
-      description,
-      membershipRequired,
-      chapter,
-      createdBy,
-    });
+    // ✅ Step 1: Find the membership portal's chapter by hmrsChapterId
+    const chapterDoc = await Chapter.findOne({ hmrsChapterId: chapter });
 
-    // Update the Chapter document in the Membership portal.
-    // We expect the membership portal's Chapter has a unique field 'hmrsChapterId'
-    const updatedChapter = await Chapter.findOneAndUpdate(
-      { hmrsChapterId: chapter },
-      { $addToSet: { events: newEvent._id } }, // add event ID if not already present
-      { new: true }
-    );
-
-    // Update caches:
-    // Cache the new event record, using key "event:<eventId>"
-    await redisClient.set(
-      `event:${newEvent._id}`,
-      JSON.stringify(newEvent),
-      { EX: 3600 } // expires in 1 hour
-    );
-    // Cache the updated chapter record, using key "chapter:<hmrsChapterId>"
-    if (updatedChapter) {
-      await redisClient.set(
-        `chapter:${updatedChapter.hmrsChapterId}`,
-        JSON.stringify(updatedChapter),
-        { EX: 3600 }
-      );
+    if (!chapterDoc) {
+      return res
+        .status(404)
+        .json({ error: "Chapter not found in membership portal." });
     }
 
-    console.log("Received event webhook. New event created:", newEvent);
-    console.log("Updated chapter with new event:", updatedChapter);
+    // ✅ Step 2: Upsert the event using hmrsEventId
+    const newEvent = await Event.findOneAndUpdate(
+      { hmrsEventId }, // match using admin ID
+      {
+        $set: {
+          eventName,
+          eventStartTime,
+          eventEndTime,
+          eventDate,
+          location,
+          description,
+          membershipRequired,
+          chapter: chapterDoc._id,
+          createdBy,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    // ✅ Step 3: Ensure event is in chapter's events[] array
+    await Chapter.findByIdAndUpdate(chapterDoc._id, {
+      $addToSet: { events: newEvent._id },
+    });
+
+    // ✅ Step 4: Cache event and chapter
+    await redisClient.set(`event:${newEvent._id}`, JSON.stringify(newEvent), {
+      EX: 3600,
+    });
+    await redisClient.set(
+      `chapter:${chapterDoc.hmrsChapterId}`,
+      JSON.stringify(chapterDoc),
+      {
+        EX: 3600,
+      }
+    );
+
+    console.log("✅ Event webhook received and stored:", newEvent);
 
     res.status(201).json({
-      message: "Event successfully received and stored. Chapter updated.",
+      message: "Event successfully received and stored.",
       event: newEvent,
-      chapter: updatedChapter,
     });
   } catch (error) {
-    console.error("Error receiving event webhook:", error);
+    console.error("❌ Error receiving event webhook:", error);
     res.status(500).json({
       error: "Server error while processing the event.",
     });
@@ -212,5 +221,58 @@ export const deleteChapter = async (req, res) => {
   } catch (err) {
     console.error("❌ Error deleting chapter:", err);
     res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+//receive delete event
+export const deleteEvent = async (req, res) => {
+  const { eventId, chapterId } = req.body; // admin's event _id and chapter _id
+
+  if (!eventId || !chapterId) {
+    return res
+      .status(400)
+      .json({ error: "eventId and chapterId are required." });
+  }
+
+  try {
+    // Convert string to ObjectId
+    const eventObjectId = Types.ObjectId.createFromHexString(eventId);
+
+    // ✅ Step 1: Find the event using admin's hmrsEventId
+    const deletedEvent = await Event.findOneAndDelete({
+      hmrsEventId: eventObjectId,
+    });
+
+    if (!deletedEvent) {
+      return res
+        .status(404)
+        .json({ error: "Event not found in membership portal." });
+    }
+
+    // ✅ Step 2: Remove it from chapter.events[] using hmrsChapterId
+    const updatedChapter = await Chapter.findOneAndUpdate(
+      { hmrsChapterId: chapterId },
+      { $pull: { events: deletedEvent._id } },
+      { new: true }
+    );
+
+    if (!updatedChapter) {
+      return res
+        .status(404)
+        .json({ error: "Chapter not found using hmrsChapterId." });
+    }
+
+    console.log("✅ Deleted event:", deletedEvent._id);
+    console.log("✅ Updated chapter:", updatedChapter.chapterName);
+
+    res.status(200).json({
+      message: "Event deleted successfully from membership portal.",
+      deletedEventId: deletedEvent._id,
+    });
+  } catch (err) {
+    console.error("❌ Error deleting event in membership portal:", err.message);
+    res
+      .status(500)
+      .json({ error: "Internal server error in membership portal." });
   }
 };

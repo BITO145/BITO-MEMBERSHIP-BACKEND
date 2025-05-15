@@ -12,26 +12,16 @@ export const getEvents = async (req, res, next) => {
     }
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize date
 
-    // We tell Mongoose:
-    //  • path: "chapter"        ← the field on Event
-    //  • model: "Chapter"       ← which collection to pull from
-    //  • localField: "chapter"  ← Event.chapter holds the HMRS ID
-    //  • foreignField: "hmrsChapterId" ← Chapter.hmrsChapterId is the same HMRS ID
-    //  • justOne: true          ← we expect a single sub‑doc, not an array
-    //  • select: "chapterName"  ← only bring in the name
     const events = await Event.find({ eventDate: { $gte: today } })
       .sort({ eventDate: 1 })
       .populate({
         path: "chapter",
-        model: "Chapter",
-        localField: "chapter",
-        foreignField: "hmrsChapterId",
-        justOne: true,
-        select: "chapterName",
+        select: "chapterName", // ✅ Only bring the name
       });
 
-    if (events.length === 0) {
+    if (!events || events.length === 0) {
       return res.status(200).json({ message: "No upcoming events" });
     }
 
