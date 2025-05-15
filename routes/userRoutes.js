@@ -6,6 +6,7 @@ import {
   updateProfile,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
@@ -15,6 +16,6 @@ router.get("/chapters", protect, getChapters);
 
 router.get("/members", getMembersCount);
 
-router.post("/update", protect, updateProfile);
+router.post("/update", protect, upload.single("image"), updateProfile);
 
 export default router;
