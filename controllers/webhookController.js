@@ -18,6 +18,7 @@ export const receiveEventWebhook = async (req, res) => {
       membershipRequired,
       chapter, // ✅ admin's chapter ID = hmrsChapterId
       createdBy,
+      image
     } = req.body;
 
     // Validate required fields
@@ -28,11 +29,12 @@ export const receiveEventWebhook = async (req, res) => {
       !eventEndTime ||
       !eventDate ||
       !location ||
-      !chapter
+      !chapter ||
+      !image
     ) {
       return res.status(400).json({
         error:
-          "Please provide hmrsEventId, eventName, eventStartTime, eventEndTime, eventDate, location, and chapter.",
+          "Please provide hmrsEventId, eventName, eventStartTime, eventEndTime, eventDate, location, chapter, and image.",
       });
     }
 
@@ -55,6 +57,7 @@ export const receiveEventWebhook = async (req, res) => {
           eventEndTime,
           eventDate,
           location,
+          image,
           description,
           membershipRequired,
           chapter: chapterDoc._id,
@@ -105,13 +108,14 @@ export const receiveChapterWebhook = async (req, res) => {
       description,
       chapterLeadName,
       events,
+      image
     } = req.body;
 
     // Validate required fields
-    if (!hmrsChapterId || !chapterName || !zone || !chapterLeadName) {
+    if (!hmrsChapterId || !chapterName || !zone || !chapterLeadName || !image) {
       return res.status(400).json({
         error:
-          "hmrsChapterId, chapterName, zone, and chapterLeadName are required.",
+          "hmrsChapterId, chapterName, zone, chapterLeadName, and image are required.",
       });
     }
 
@@ -124,7 +128,8 @@ export const receiveChapterWebhook = async (req, res) => {
           zone,
           description,
           chapterLeadName,
-          events: events, // This will be set from the payload
+          events: events || [], // This will be set from the payload
+          image: image || "",
         },
       },
       { new: true, upsert: true }

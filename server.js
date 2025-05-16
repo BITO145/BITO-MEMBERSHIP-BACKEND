@@ -9,10 +9,12 @@ import rateLimit from "express-rate-limit";
 import { createClient } from "redis";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import connectToCloudinary from "./config/cloudinary.js";
 
 dotenv.config();
 
 connectDB();
+connectToCloudinary();
 
 const app = express();
 

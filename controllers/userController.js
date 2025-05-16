@@ -2,6 +2,8 @@ import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
+import cloudinary from "cloudinary";
+import fs from "fs";
 
 // controllers/eventController.js
 export const getEvents = async (req, res, next) => {
@@ -88,23 +90,38 @@ export const getMembersCount = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("this is user id", userId);
     const { phone, about, nationality, country, businessSector } = req.body;
 
-    const updatedUser = await Member.findByIdAndUpdate(
-      userId,
-      {
-        phone,
-        about,
-        nationality,
-        country,
-        businessSector,
-      },
-      { new: true }
-    );
+    let profileImageUrl = null;
+
+    if (req.file) {
+      // Upload to cloudinary manually
+      const result = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: "user-profiles",
+      });
+      profileImageUrl = result.secure_url;
+
+      // Clean up local file
+      fs.unlinkSync(req.file.path);
+    }
+
+    const updatedData = {
+      ...(phone && { phone }),
+      ...(about && { about }),
+      ...(nationality && { nationality }),
+      ...(country && { country }),
+      ...(businessSector && { businessSector }),
+      ...(profileImageUrl && { image: profileImageUrl }),
+    };
+
+    const updatedUser = await Member.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+    });
 
     if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     return res.status(200).json({
@@ -114,8 +131,14 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating profile:", error);
+    fs.unlink(req.file.path, (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+      }
+    });
     return res.status(500).json({
-      error: "An error occurred while updating the profile",
+      success: false,
+      message: "Error updating profile",
     });
   }
 };

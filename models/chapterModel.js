@@ -11,6 +11,7 @@ const chapterSchema = new mongoose.Schema(
     chapterName: { type: String, required: true },
     zone: { type: String, required: true },
     description: { type: String },
+    image: { type: String },
     chapterLeadName: { type: String, required: true },
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
     members: [
