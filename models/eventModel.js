@@ -39,8 +39,8 @@ const eventSchema = new mongoose.Schema(
       default: false,
     },
     chapter: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Chapter",
+      type: String,
+      unique: true,
       required: true,
     },
     createdBy: {

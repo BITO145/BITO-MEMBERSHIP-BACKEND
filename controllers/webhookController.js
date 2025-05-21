@@ -3,6 +3,7 @@ import Chapter from "../models/chapterModel.js";
 import Member from "../models/memberModel.js";
 import { Types } from "mongoose";
 import { redisClient } from "../services/redisClient.js";
+import OppModel from "../models/OppModel.js";
 
 // receive event webhook
 export const receiveEventWebhook = async (req, res) => {
@@ -18,7 +19,7 @@ export const receiveEventWebhook = async (req, res) => {
       membershipRequired,
       chapter, // ✅ admin's chapter ID = hmrsChapterId
       createdBy,
-      image
+      image,
     } = req.body;
 
     // Validate required fields
@@ -60,7 +61,7 @@ export const receiveEventWebhook = async (req, res) => {
           image,
           description,
           membershipRequired,
-          chapter: chapterDoc._id,
+          chapter: chapterDoc.hmrsChapterId,
           createdBy,
         },
       },
@@ -108,7 +109,7 @@ export const receiveChapterWebhook = async (req, res) => {
       description,
       chapterLeadName,
       events,
-      image
+      image,
     } = req.body;
 
     // Validate required fields
@@ -192,6 +193,40 @@ export const updateMemberRole = async (req, res) => {
     res
       .status(500)
       .json({ error: error.message || "Server error during role update" });
+  }
+};
+
+//receive opportunity
+export const receiveOpp = async (req, res) => {
+  try {
+    const {
+      hrmsOppId,
+      oppName,
+      oppDate,
+      location,
+      image,
+      description,
+      membershipRequired,
+    } = req.body;
+
+    const newOpp = new OppModel({
+      hrmsOppId,
+      oppName,
+      oppDate,
+      location,
+      image,
+      description,
+      membershipRequired,
+    });
+
+    await newOpp.save();
+
+    res
+      .status(201)
+      .json({ message: "Opportunity synced to membership portal." });
+  } catch (err) {
+    console.error("Webhook error:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 

@@ -102,9 +102,11 @@ export const enrollMemberInEvent = async (req, res) => {
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
+    console.log(event);
     const chapterDoc = await Chapter.findOne({
       hmrsChapterId: event.chapter,
     }).lean();
+    console.log(chapterDoc);
     if (!chapterDoc) {
       return res.status(404).json({
         error: "The event's corresponding chapter does not exist.",
