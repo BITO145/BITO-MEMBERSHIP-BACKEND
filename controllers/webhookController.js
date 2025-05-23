@@ -40,8 +40,15 @@ export const receiveEventWebhook = async (req, res) => {
     }
 
     // ✅ Step 1: Find the membership portal's chapter by hmrsChapterId
-    const chapterDoc = await Chapter.findOne({ hmrsChapterId: chapter });
+    if (!chapter || !chapter.chapterId || !chapter.chapterName) {
+      return res.status(400).json({
+        error: "Chapter object must include chapterId and chapterName.",
+      });
+    }
 
+    const chapterDoc = await Chapter.findOne({
+      hmrsChapterId: chapter.chapterId,
+    });
     if (!chapterDoc) {
       return res
         .status(404)
@@ -61,7 +68,10 @@ export const receiveEventWebhook = async (req, res) => {
           image,
           description,
           membershipRequired,
-          chapter: chapterDoc.hmrsChapterId,
+          chapter: {
+            chapterId: chapter.chapterId,
+            chapterName: chapter.chapterName,
+          },
           createdBy,
         },
       },

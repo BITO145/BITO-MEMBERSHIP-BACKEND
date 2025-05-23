@@ -19,6 +19,7 @@ router.post("/chapters/receive", receiveChapterWebhook);
 // Webhook route to update member's role
 router.post("/updateRole", updateMemberRole);
 
+//New opportunity
 router.post("/opportunity", receiveOpp);
 
 // Delete Webhook Chapter

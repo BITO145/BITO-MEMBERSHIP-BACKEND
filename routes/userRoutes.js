@@ -2,6 +2,7 @@ import express from "express";
 import {
   getChapters,
   getEvents,
+  getMemberEnrolledEvents,
   getMembersCount,
   updateProfile,
 } from "../controllers/userController.js";
@@ -15,6 +16,8 @@ router.get("/events", protect, getEvents);
 router.get("/chapters", protect, getChapters);
 
 router.get("/members", getMembersCount);
+
+router.get("/:memberId/events", protect, getMemberEnrolledEvents);
 
 router.post("/update", protect, upload.single("image"), updateProfile);
 

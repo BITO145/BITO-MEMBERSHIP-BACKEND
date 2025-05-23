@@ -39,9 +39,8 @@ const eventSchema = new mongoose.Schema(
       default: false,
     },
     chapter: {
-      type: String,
-      unique: true,
-      required: true,
+      chapterId: { type: String, required: true },
+      chapterName: { type: String, required: true },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

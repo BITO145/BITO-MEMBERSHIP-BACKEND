@@ -37,6 +37,12 @@ const memberSchema = new mongoose.Schema({
       dateOfJoining: { type: Date, default: Date.now },
     },
   ],
+  opportunitiesEnrolled: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Opportunity", // Membership portal Opportunity model
+    },
+  ],
   membershipExpiryDate: {
     type: Date,
   },

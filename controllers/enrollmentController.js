@@ -1,6 +1,7 @@
 import Member from "../models/memberModel.js";
 import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
+import OppModel from "../models/OppModel.js";
 import axios from "axios";
 
 const hmrsUrl = process.env.HMRS_URL;
@@ -104,7 +105,7 @@ export const enrollMemberInEvent = async (req, res) => {
     }
     console.log(event);
     const chapterDoc = await Chapter.findOne({
-      hmrsChapterId: event.chapter,
+      hmrsChapterId: event.chapter.chapterId,
     }).lean();
     console.log(chapterDoc);
     if (!chapterDoc) {
@@ -151,5 +152,55 @@ export const enrollMemberInEvent = async (req, res) => {
   } catch (error) {
     console.error("Enrollment in event error:", error);
     return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const enrollMemberInOpp = async (req, res) => {
+  try {
+    const memberId = req.user._id; // from auth middleware
+    const { hrmsOppId } = req.body;
+
+    if (!hrmsOppId)
+      return res.status(400).json({ error: "Opportunity ID is required." });
+
+    const member = await Member.findById(memberId);
+    if (!member) return res.status(404).json({ error: "Member not found." });
+
+    const opportunity = await OppModel.findOne({ hrmsOppId });
+    if (!opportunity)
+      return res.status(404).json({ error: "Opportunity not found." });
+
+    // Check if already enrolled
+    if (opportunity.interestedMembers.includes(memberId)) {
+      return res
+        .status(409)
+        .json({ error: "Already enrolled in this opportunity." });
+    }
+
+    // 1️⃣ Add member to opportunity
+    opportunity.interestedMembers.push(memberId);
+    await opportunity.save();
+
+    // 2️⃣ Add opportunity to member
+    member.opportunitiesEnrolled = member.opportunitiesEnrolled || [];
+    member.opportunitiesEnrolled.push(opportunity._id);
+    await member.save();
+
+    // 3️⃣ Webhook to Admin Portal to update their `interestedMembers` list
+    await axios.post("http://localhost:5000/sa/webhook/opportunity-enroll", {
+      hrmsOppId: opportunity.hrmsOppId,
+      memberId: member._id.toString(),
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      membershipLevel: member.membershipLevel || "basic",
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Successfully enrolled in the opportunity." });
+  } catch (error) {
+    console.error("❌ Enrollment Error:", error);
+    return res.status(500).json({ error: "Server error during enrollment." });
   }
 };

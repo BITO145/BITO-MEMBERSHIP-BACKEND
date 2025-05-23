@@ -142,3 +142,23 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
+
+export const getMemberEnrolledEvents = async (req, res) => {
+  try {
+    const { memberId } = req.params;
+
+    const member = await Member.findById(memberId).populate({
+      path: "eventsEnrolled",
+      select: "eventName eventDate location",
+      options: { sort: { eventDate: -1 } }, // 🆕 Sort by eventDate DESCENDING (latest first)
+    });
+
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    res.status(200).json({ events: member.eventsEnrolled });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
