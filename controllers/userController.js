@@ -4,6 +4,7 @@ import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
 import cloudinary from "cloudinary";
 import fs from "fs";
+import mongoose from "mongoose";
 
 // controllers/eventController.js
 export const getEvents = async (req, res, next) => {
@@ -143,22 +144,70 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+
+
+
 export const getMemberEnrolledEvents = async (req, res) => {
   try {
     const { memberId } = req.params;
 
-    const member = await Member.findById(memberId).populate({
-      path: "eventsEnrolled",
-      select: "eventName eventDate location",
-      options: { sort: { eventDate: -1 } }, // 🆕 Sort by eventDate DESCENDING (latest first)
-    });
+    // // In a real scenario, you would fetch data from the database here
+    // // The following lines are commented out for dummy data purposes.
+    // const member = await Member.findById(memberId).populate({
+    //   path: "eventsEnrolled",
+    //   select: "eventName eventDate location",
+    //   options: { sort: { eventDate: -1 } }, // Sort by eventDate DESCENDING (latest first)
+    // });
 
-    if (!member) {
-      return res.status(404).json({ error: "Member not found" });
-    }
+    // if (!member) {
+    //   return res.status(404).json({ error: "Member not found" });
+    // }
 
-    res.status(200).json({ events: member.eventsEnrolled });
+    // --- DUMMY DATA FOR FRONTEND TESTING ---
+    const today = new Date();
+    const dummyEvents = [
+      // Upcoming Events (future dates)
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Future Tech Summit', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 1, 10, 10, 0).toISOString(), location: 'Virtual Conference Hall' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'AI & Machine Learning Workshop', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 2, 5, 9, 30).toISOString(), location: 'City Auditorium' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Blockchain Innovations Meetup', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 3, 1, 14, 0).toISOString(), location: 'Innovation Hub Co-working Space' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Web Development Bootcamp', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 1, 25, 9, 0).toISOString(), location: 'Online Platform' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Data Science Conference', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 2, 18, 9, 0).toISOString(), location: 'Convention Center' },
+
+      // Past Events (previous dates)
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Spring Networking Gala', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 1, 20, 19, 0).toISOString(), location: 'Grand Hotel Ballroom' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Annual General Meeting 2024', eventDate: new Date(today.getFullYear() - 1, 11, 1, 11, 0).toISOString(), location: 'Headquarters Boardroom' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Digital Marketing Summit', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 2, 12, 9, 0).toISOString(), location: 'Online Webinar Platform' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Product Management Masterclass', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 3, 5, 10, 0).toISOString(), location: 'Training Institute' },
+      { _id: new mongoose.Types.ObjectId(), eventName: 'Cybersecurity Workshop', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 4, 1, 13, 0).toISOString(), location: 'Tech Hub' },
+    ];
+
+    // Simulate network delay to better mimic real API calls
+    await new Promise(resolve => setTimeout(resolve, 500));
+    // -----------------------------------------------------
+
+    res.status(200).json({ events: dummyEvents });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error in getMemberEnrolledEvents (Dummy):", err); // Log the error to the console
+    res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
+
+// export const getMemberEnrolledEvents = async (req, res) => {
+//   try {
+//     const { memberId } = req.params;
+
+//     const member = await Member.findById(memberId).populate({
+//       path: "eventsEnrolled",
+//       select: "eventName eventDate location",
+//       options: { sort: { eventDate: -1 } }, // 🆕 Sort by eventDate DESCENDING (latest first)
+//     });
+
+//     if (!member) {
+//       return res.status(404).json({ error: "Member not found" });
+//     }
+
+//     res.status(200).json({ events: member.eventsEnrolled });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
