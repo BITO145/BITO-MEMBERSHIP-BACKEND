@@ -212,72 +212,72 @@ export const getMemberEnrolledEvents = async (req, res) => {
   }
 };
 
-// dummy getMemberEnrolledChapters data controller
-export const getMemberEnrolledChapters = async (req, res) => {
-  try {
-    const { memberId } = req.params;
+// // dummy getMemberEnrolledChapters data controller
+// export const getMemberEnrolledChapters = async (req, res) => {
+//   try {
+//     const { memberId } = req.params;
 
-    // Simulate finding a member (optional, but good for consistent structure)
-    // In a real scenario, you'd fetch the member by ID and populate chapters.
-    // const member = await Member.findById(memberId);
-    // if (!member) {
-    //   return res.status(404).json({ error: "Member not found" });
-    // }
+//     // Simulate finding a member (optional, but good for consistent structure)
+//     // In a real scenario, you'd fetch the member by ID and populate chapters.
+//     // const member = await Member.findById(memberId);
+//     // if (!member) {
+//     //   return res.status(404).json({ error: "Member not found" });
+//     // }
 
-    // --- DUMMY DATA FOR ENROLLED CHAPTERS ---
-    const dummyEnrolledChapters = [
-      {
-        hmrsChapterId: new mongoose.Types.ObjectId(), // Use ObjectId for realistic IDs
-        chapterName: "Innovators Hub - North Zone",
-        zone: "North Zone",
-        description: "A dynamic chapter focused on fostering innovation and technological advancements.",
-        chapterLeadName: "Alice Wonderland",
-        chapterLeadImage: "https://via.placeholder.com/150/FF5733/FFFFFF?text=AL", // Placeholder image
-        members: [
-          { role: "member" }, { role: "member" }, { role: "committee" },
-          { role: "member" }, { role: "member" }, { role: "member" },
-          { role: "committee" }, { role: "member" }, { role: "member" },
-          { role: "member" }, { role: "member" }, { role: "member" },
-        ], // More members for realistic counts
-        events: [{}, {}, {}], // Dummy events for count
-      },
-      {
-        hmrsChapterId: new mongoose.Types.ObjectId(),
-        chapterName: "Leadership Nexus - South Zone",
-        zone: "South Zone",
-        description: "Dedicated to developing leadership skills and strategic thinking among members.",
-        chapterLeadName: "Bob The Builder",
-        chapterLeadImage: "https://via.placeholder.com/150/33FF57/FFFFFF?text=BB", // Placeholder image
-        members: [
-          { role: "member" }, { role: "committee" }, { role: "member" },
-          { role: "member" }, { role: "member" },
-        ],
-        events: [{}, {}, {}, {}], // Dummy events for count
-      },
-      {
-        hmrsChapterId: new mongoose.Types.ObjectId(),
-        chapterName: "Creative Minds - East Zone",
-        zone: "East Zone",
-        description: "Exploring new ideas and fostering creativity in various domains.",
-        chapterLeadName: "Charlie Chaplin",
-        chapterLeadImage: null, // No image for this one to test fallback
-        members: [
-          { role: "member" }, { role: "committee" }, { role: "member" },
-          { role: "committee" },
-        ],
-        events: [{}, {}],
-      },
-    ];
+//     // --- DUMMY DATA FOR ENROLLED CHAPTERS ---
+//     const dummyEnrolledChapters = [
+//       {
+//         hmrsChapterId: new mongoose.Types.ObjectId(), // Use ObjectId for realistic IDs
+//         chapterName: "Innovators Hub - North Zone",
+//         zone: "North Zone",
+//         description: "A dynamic chapter focused on fostering innovation and technological advancements.",
+//         chapterLeadName: "Alice Wonderland",
+//         chapterLeadImage: "https://via.placeholder.com/150/FF5733/FFFFFF?text=AL", // Placeholder image
+//         members: [
+//           { role: "member" }, { role: "member" }, { role: "committee" },
+//           { role: "member" }, { role: "member" }, { role: "member" },
+//           { role: "committee" }, { role: "member" }, { role: "member" },
+//           { role: "member" }, { role: "member" }, { role: "member" },
+//         ], // More members for realistic counts
+//         events: [{}, {}, {}], // Dummy events for count
+//       },
+//       {
+//         hmrsChapterId: new mongoose.Types.ObjectId(),
+//         chapterName: "Leadership Nexus - South Zone",
+//         zone: "South Zone",
+//         description: "Dedicated to developing leadership skills and strategic thinking among members.",
+//         chapterLeadName: "Bob The Builder",
+//         chapterLeadImage: "https://via.placeholder.com/150/33FF57/FFFFFF?text=BB", // Placeholder image
+//         members: [
+//           { role: "member" }, { role: "committee" }, { role: "member" },
+//           { role: "member" }, { role: "member" },
+//         ],
+//         events: [{}, {}, {}, {}], // Dummy events for count
+//       },
+//       {
+//         hmrsChapterId: new mongoose.Types.ObjectId(),
+//         chapterName: "Creative Minds - East Zone",
+//         zone: "East Zone",
+//         description: "Exploring new ideas and fostering creativity in various domains.",
+//         chapterLeadName: "Charlie Chaplin",
+//         chapterLeadImage: null, // No image for this one to test fallback
+//         members: [
+//           { role: "member" }, { role: "committee" }, { role: "member" },
+//           { role: "committee" },
+//         ],
+//         events: [{}, {}],
+//       },
+//     ];
 
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    // --- END DUMMY DATA ---
+//     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+//     // --- END DUMMY DATA ---
 
-    res.status(200).json({ chapters: dummyEnrolledChapters });
-  } catch (err) {
-    console.error("Error in getMemberEnrolledChapters (Dummy):", err);
-    res.status(500).json({ error: err.message || "Internal Server Error" });
-  }
-};
+//     res.status(200).json({ chapters: dummyEnrolledChapters });
+//   } catch (err) {
+//     console.error("Error in getMemberEnrolledChapters (Dummy):", err);
+//     res.status(500).json({ error: err.message || "Internal Server Error" });
+//   }
+// };
 
 // export const getMemberEnrolledChapters = async (req, res) => {
 //   try {
@@ -289,12 +289,8 @@ export const getMemberEnrolledChapters = async (req, res) => {
 //     }
 
 //     // Find the member and populate their chapter memberships
-//     const member = await Member.findById(memberId).populate({
-//       path: "chapterMemberships.chapterId", // Populate the 'chapterId' field within 'chapterMemberships'
-//       select: "hmrsChapterId chapterName zone description chapterLeadName chapterLeadImage members events", // Select fields needed by frontend
-//       // You might want to add options here, e.g., to sort chapters by name
-//       // options: { sort: { chapterName: 1 } }
-//     });
+//     const member = await Member.findById(memberId);
+//     const chapter = await Chapter.find();
 // console.log(member)
 //     if (!member) {
 //       return res.status(404).json({ error: "Member not found" });
@@ -303,6 +299,7 @@ export const getMemberEnrolledChapters = async (req, res) => {
 //     // Extract the populated chapter objects
 //     const enrolledChapters = member.chapterMemberships.map(membership => membership.chapterId);
 // console.log(enrolledChapters)
+// console.log(chapter)
 //     // If no chapters are enrolled or populated
 //     if (!enrolledChapters || enrolledChapters.length === 0) {
 //       return res.status(200).json({ chapters: [], message: "No enrolled chapters found for this member." });
@@ -314,3 +311,58 @@ export const getMemberEnrolledChapters = async (req, res) => {
 //     res.status(500).json({ error: err.message || "Internal Server Error" });
 //   }
 // };
+
+export const getMemberEnrolledChapters = async (req, res) => {
+  try {
+    const { memberId } = req.params;
+
+    // Validate memberId
+    if (!memberId || !mongoose.Types.ObjectId.isValid(memberId)) {
+      return res.status(400).json({ error: "Invalid Member ID" });
+    }
+
+    // Find the member
+    const member = await Member.findById(memberId);
+
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    // Get all chapters from the database
+    const allChapters = await Chapter.find();
+    console.log("All Chapters:", allChapters); // Debugging: Remove in production
+
+    // Extract the Chapter _ids (as strings) from the member's memberships
+    // This is crucial: chapterId in member.chapterMemberships is an ObjectId
+    const enrolledChapterObjectIds = member.chapterMemberships.map(membership => membership.chapterId.toString());
+    console.log("Enrolled Chapter Object IDs (from member):", enrolledChapterObjectIds); // Debugging: Remove in production
+
+    // Filter all chapters to find the ones the member is enrolled in using their _id
+    const enrolledChaptersWithDetails = allChapters.filter(chapter => {
+      // Check if the chapter's _id (converted to string) is in the enrolledChapterObjectIds list
+      return enrolledChapterObjectIds.includes(chapter.hmrsChapterId.toString());
+    }).map(chapter => ({ // Format the chapter details as per frontend expectation
+        _id: chapter._id,
+        hmrsChapterId: chapter.hmrsChapterId,
+        chapterName: chapter.chapterName,
+        zone: chapter.zone,
+        description: chapter.description,
+        chapterLeadName: chapter.chapterLeadName,
+        chapterLeadImage: chapter.image, // Assuming 'image' from Chapter model is 'chapterLeadImage' on frontend
+        // Add any other fields your frontend expects for a chapter
+    }));
+
+    console.log("Enrolled Chapters with Details:", enrolledChaptersWithDetails); // Debugging: Remove in production
+
+    // If no chapters are enrolled
+    if (!enrolledChaptersWithDetails || enrolledChaptersWithDetails.length === 0) {
+      return res.status(200).json({ chapters: [], message: "No enrolled chapters found for this member." });
+    }
+
+    res.status(200).json({ chapters: enrolledChaptersWithDetails });
+
+  } catch (err) {
+    console.error("Error in getMemberEnrolledChapters:", err);
+    res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
