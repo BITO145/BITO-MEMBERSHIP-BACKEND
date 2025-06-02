@@ -146,51 +146,6 @@ export const updateProfile = async (req, res) => {
 
 
 
-// dummy getMemberEnrolledEvents  data controller
-// export const getMemberEnrolledEvents = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-
-//     // // In a real scenario, you would fetch data from the database here
-//     // // The following lines are commented out for dummy data purposes.
-//     // const member = await Member.findById(memberId).populate({
-//     //   path: "eventsEnrolled",
-//     //   select: "eventName eventDate location",
-//     //   options: { sort: { eventDate: -1 } }, // Sort by eventDate DESCENDING (latest first)
-//     // });
-
-//     // if (!member) {
-//     //   return res.status(404).json({ error: "Member not found" });
-//     // }
-
-//     // --- DUMMY DATA FOR FRONTEND TESTING ---
-//     const today = new Date();
-//     const dummyEvents = [
-//       // Upcoming Events (future dates)
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Future Tech Summit', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 1, 10, 10, 0).toISOString(), location: 'Virtual Conference Hall' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'AI & Machine Learning Workshop', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 2, 5, 9, 30).toISOString(), location: 'City Auditorium' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Blockchain Innovations Meetup', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 3, 1, 14, 0).toISOString(), location: 'Innovation Hub Co-working Space' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Web Development Bootcamp', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 1, 25, 9, 0).toISOString(), location: 'Online Platform' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Data Science Conference', eventDate: new Date(today.getFullYear() + 0, today.getMonth() + 2, 18, 9, 0).toISOString(), location: 'Convention Center' },
-
-//       // Past Events (previous dates)
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Spring Networking Gala', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 1, 20, 19, 0).toISOString(), location: 'Grand Hotel Ballroom' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Annual General Meeting 2024', eventDate: new Date(today.getFullYear() - 1, 11, 1, 11, 0).toISOString(), location: 'Headquarters Boardroom' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Digital Marketing Summit', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 2, 12, 9, 0).toISOString(), location: 'Online Webinar Platform' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Product Management Masterclass', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 3, 5, 10, 0).toISOString(), location: 'Training Institute' },
-//       { _id: new mongoose.Types.ObjectId(), eventName: 'Cybersecurity Workshop', eventDate: new Date(today.getFullYear() + 0, today.getMonth() - 4, 1, 13, 0).toISOString(), location: 'Tech Hub' },
-//     ];
-
-//     // Simulate network delay to better mimic real API calls
-//     await new Promise(resolve => setTimeout(resolve, 500));
-//     // -----------------------------------------------------
-
-//     res.status(200).json({ events: dummyEvents });
-//   } catch (err) {
-//     console.error("Error in getMemberEnrolledEvents (Dummy):", err); // Log the error to the console
-//     res.status(500).json({ error: err.message || "Internal Server Error" });
-//   }
-// };
 
 export const getMemberEnrolledEvents = async (req, res) => {
   try {
@@ -212,105 +167,6 @@ export const getMemberEnrolledEvents = async (req, res) => {
   }
 };
 
-// // dummy getMemberEnrolledChapters data controller
-// export const getMemberEnrolledChapters = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-
-//     // Simulate finding a member (optional, but good for consistent structure)
-//     // In a real scenario, you'd fetch the member by ID and populate chapters.
-//     // const member = await Member.findById(memberId);
-//     // if (!member) {
-//     //   return res.status(404).json({ error: "Member not found" });
-//     // }
-
-//     // --- DUMMY DATA FOR ENROLLED CHAPTERS ---
-//     const dummyEnrolledChapters = [
-//       {
-//         hmrsChapterId: new mongoose.Types.ObjectId(), // Use ObjectId for realistic IDs
-//         chapterName: "Innovators Hub - North Zone",
-//         zone: "North Zone",
-//         description: "A dynamic chapter focused on fostering innovation and technological advancements.",
-//         chapterLeadName: "Alice Wonderland",
-//         chapterLeadImage: "https://via.placeholder.com/150/FF5733/FFFFFF?text=AL", // Placeholder image
-//         members: [
-//           { role: "member" }, { role: "member" }, { role: "committee" },
-//           { role: "member" }, { role: "member" }, { role: "member" },
-//           { role: "committee" }, { role: "member" }, { role: "member" },
-//           { role: "member" }, { role: "member" }, { role: "member" },
-//         ], // More members for realistic counts
-//         events: [{}, {}, {}], // Dummy events for count
-//       },
-//       {
-//         hmrsChapterId: new mongoose.Types.ObjectId(),
-//         chapterName: "Leadership Nexus - South Zone",
-//         zone: "South Zone",
-//         description: "Dedicated to developing leadership skills and strategic thinking among members.",
-//         chapterLeadName: "Bob The Builder",
-//         chapterLeadImage: "https://via.placeholder.com/150/33FF57/FFFFFF?text=BB", // Placeholder image
-//         members: [
-//           { role: "member" }, { role: "committee" }, { role: "member" },
-//           { role: "member" }, { role: "member" },
-//         ],
-//         events: [{}, {}, {}, {}], // Dummy events for count
-//       },
-//       {
-//         hmrsChapterId: new mongoose.Types.ObjectId(),
-//         chapterName: "Creative Minds - East Zone",
-//         zone: "East Zone",
-//         description: "Exploring new ideas and fostering creativity in various domains.",
-//         chapterLeadName: "Charlie Chaplin",
-//         chapterLeadImage: null, // No image for this one to test fallback
-//         members: [
-//           { role: "member" }, { role: "committee" }, { role: "member" },
-//           { role: "committee" },
-//         ],
-//         events: [{}, {}],
-//       },
-//     ];
-
-//     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-//     // --- END DUMMY DATA ---
-
-//     res.status(200).json({ chapters: dummyEnrolledChapters });
-//   } catch (err) {
-//     console.error("Error in getMemberEnrolledChapters (Dummy):", err);
-//     res.status(500).json({ error: err.message || "Internal Server Error" });
-//   }
-// };
-
-// export const getMemberEnrolledChapters = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-
-//     // Validate memberId
-//     if (!memberId || !mongoose.Types.ObjectId.isValid(memberId)) {
-//       return res.status(400).json({ error: "Invalid Member ID" });
-//     }
-
-//     // Find the member and populate their chapter memberships
-//     const member = await Member.findById(memberId);
-//     const chapter = await Chapter.find();
-// console.log(member)
-//     if (!member) {
-//       return res.status(404).json({ error: "Member not found" });
-//     }
-
-//     // Extract the populated chapter objects
-//     const enrolledChapters = member.chapterMemberships.map(membership => membership.chapterId);
-// console.log(enrolledChapters)
-// console.log(chapter)
-//     // If no chapters are enrolled or populated
-//     if (!enrolledChapters || enrolledChapters.length === 0) {
-//       return res.status(200).json({ chapters: [], message: "No enrolled chapters found for this member." });
-//     }
-
-//     res.status(200).json({ chapters: enrolledChapters });
-//   } catch (err) {
-//     console.error("Error in getMemberEnrolledChapters:", err);
-//     res.status(500).json({ error: err.message || "Internal Server Error" });
-//   }
-// };
 
 export const getMemberEnrolledChapters = async (req, res) => {
   try {
@@ -330,12 +186,10 @@ export const getMemberEnrolledChapters = async (req, res) => {
 
     // Get all chapters from the database
     const allChapters = await Chapter.find();
-    console.log("All Chapters:", allChapters); // Debugging: Remove in production
 
     // Extract the Chapter _ids (as strings) from the member's memberships
     // This is crucial: chapterId in member.chapterMemberships is an ObjectId
     const enrolledChapterObjectIds = member.chapterMemberships.map(membership => membership.chapterId.toString());
-    console.log("Enrolled Chapter Object IDs (from member):", enrolledChapterObjectIds); // Debugging: Remove in production
 
     // Filter all chapters to find the ones the member is enrolled in using their _id
     const enrolledChaptersWithDetails = allChapters.filter(chapter => {
@@ -352,7 +206,6 @@ export const getMemberEnrolledChapters = async (req, res) => {
         // Add any other fields your frontend expects for a chapter
     }));
 
-    console.log("Enrolled Chapters with Details:", enrolledChaptersWithDetails); // Debugging: Remove in production
 
     // If no chapters are enrolled
     if (!enrolledChaptersWithDetails || enrolledChaptersWithDetails.length === 0) {
