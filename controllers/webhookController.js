@@ -11,6 +11,8 @@ export const receiveEventWebhook = async (req, res) => {
     const {
       hmrsEventId, // ✅ admin's event ID
       eventName,
+      slots,
+      link,
       eventStartTime,
       eventEndTime,
       eventDate,
@@ -26,6 +28,7 @@ export const receiveEventWebhook = async (req, res) => {
     if (
       !hmrsEventId ||
       !eventName ||
+      !link ||
       !eventStartTime ||
       !eventEndTime ||
       !eventDate ||
@@ -37,6 +40,14 @@ export const receiveEventWebhook = async (req, res) => {
         error:
           "Please provide hmrsEventId, eventName, eventStartTime, eventEndTime, eventDate, location, chapter, and image.",
       });
+    }
+
+    if (membershipRequired === true || membershipRequired === "true") {
+      if (!slots || slots <= 0) {
+        return res.status(400).json({
+          error: "Membership-required events must have slots greater than 0.",
+        });
+      }
     }
 
     // ✅ Step 1: Find the membership portal's chapter by hmrsChapterId
@@ -61,6 +72,8 @@ export const receiveEventWebhook = async (req, res) => {
       {
         $set: {
           eventName,
+          slots,
+          link,
           eventStartTime,
           eventEndTime,
           eventDate,

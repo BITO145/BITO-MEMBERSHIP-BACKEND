@@ -103,18 +103,20 @@ export const enrollMemberInEvent = async (req, res) => {
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
-    console.log(event);
+
+    const hmrsEventId = event.hmrsEventId;
+
     const chapterDoc = await Chapter.findOne({
       hmrsChapterId: event.chapter.chapterId,
     }).lean();
-    console.log(chapterDoc);
+
     if (!chapterDoc) {
       return res.status(404).json({
         error: "The event's corresponding chapter does not exist.",
       });
     }
 
-    // ——— NEW: check membership via chapterMemberships ———
+    // Check if member is part of the chapter
     const enrolledChapterIds = (member.chapterMemberships || []).map((cm) =>
       cm.chapterId.toString()
     );
@@ -135,7 +137,19 @@ export const enrollMemberInEvent = async (req, res) => {
         .json({ error: "User is already registered for this event." });
     }
 
-    // Enroll in event
+    // If membership is required, check slots
+    if (
+      event.membershipRequired === true ||
+      event.membershipRequired === "true"
+    ) {
+      if (typeof event.slots !== "number" || event.slots <= 0) {
+        return res.status(400).json({
+          error: "No available slots for this event.",
+        });
+      }
+    }
+
+    // Enroll the member
     const updatedMember = await Member.findByIdAndUpdate(
       memberId,
       {
@@ -145,7 +159,45 @@ export const enrollMemberInEvent = async (req, res) => {
       { new: true }
     );
 
+    // Build update payload for Event
+    const eventUpdatePayload = {
+      $addToSet: {
+        members: {
+          memberId: updatedMember._id,
+          name: updatedMember.name,
+          email: updatedMember.email,
+          phone: updatedMember.phone,
+        },
+      },
+    };
+
+    // If membershipRequired, decrement slot count
+    if (
+      event.membershipRequired === true ||
+      event.membershipRequired === "true"
+    ) {
+      eventUpdatePayload.$inc = { slots: -1 };
+    }
+
+    await Event.findByIdAndUpdate(eventId, eventUpdatePayload, { new: true });
+
+    // Notify HMRS portal
+    await axios.post(
+      `${hmrsUrl}/sa/events/${hmrsEventId}/enrollMember`,
+      {
+        memberId: updatedMember._id,
+        name: updatedMember.name,
+        email: updatedMember.email,
+        phone: updatedMember.phone,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+
     return res.status(200).json({
+      success: true,
       message: "Enrollment in event successful.",
       member: updatedMember,
     });
