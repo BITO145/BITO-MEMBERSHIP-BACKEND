@@ -144,9 +144,6 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-
-
-
 export const getMemberEnrolledEvents = async (req, res) => {
   try {
     const { memberId } = req.params;
@@ -166,7 +163,6 @@ export const getMemberEnrolledEvents = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const getMemberEnrolledChapters = async (req, res) => {
   try {
@@ -189,13 +185,20 @@ export const getMemberEnrolledChapters = async (req, res) => {
 
     // Extract the Chapter _ids (as strings) from the member's memberships
     // This is crucial: chapterId in member.chapterMemberships is an ObjectId
-    const enrolledChapterObjectIds = member.chapterMemberships.map(membership => membership.chapterId.toString());
+    const enrolledChapterObjectIds = member.chapterMemberships.map(
+      (membership) => membership.chapterId.toString()
+    );
 
     // Filter all chapters to find the ones the member is enrolled in using their _id
-    const enrolledChaptersWithDetails = allChapters.filter(chapter => {
-      // Check if the chapter's _id (converted to string) is in the enrolledChapterObjectIds list
-      return enrolledChapterObjectIds.includes(chapter.hmrsChapterId.toString());
-    }).map(chapter => ({ // Format the chapter details as per frontend expectation
+    const enrolledChaptersWithDetails = allChapters
+      .filter((chapter) => {
+        // Check if the chapter's _id (converted to string) is in the enrolledChapterObjectIds list
+        return enrolledChapterObjectIds.includes(
+          chapter.hmrsChapterId.toString()
+        );
+      })
+      .map((chapter) => ({
+        // Format the chapter details as per frontend expectation
         _id: chapter._id,
         hmrsChapterId: chapter.hmrsChapterId,
         chapterName: chapter.chapterName,
@@ -204,16 +207,22 @@ export const getMemberEnrolledChapters = async (req, res) => {
         chapterLeadName: chapter.chapterLeadName,
         chapterLeadImage: chapter.image, // Assuming 'image' from Chapter model is 'chapterLeadImage' on frontend
         // Add any other fields your frontend expects for a chapter
-    }));
-
+      }));
 
     // If no chapters are enrolled
-    if (!enrolledChaptersWithDetails || enrolledChaptersWithDetails.length === 0) {
-      return res.status(200).json({ chapters: [], message: "No enrolled chapters found for this member." });
+    if (
+      !enrolledChaptersWithDetails ||
+      enrolledChaptersWithDetails.length === 0
+    ) {
+      return res
+        .status(200)
+        .json({
+          chapters: [],
+          message: "No enrolled chapters found for this member.",
+        });
     }
 
     res.status(200).json({ chapters: enrolledChaptersWithDetails });
-
   } catch (err) {
     console.error("Error in getMemberEnrolledChapters:", err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
