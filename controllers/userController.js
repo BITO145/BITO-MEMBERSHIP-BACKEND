@@ -102,7 +102,9 @@ export const getOpportunities = async (req, res) => {
     }
 
     console.log("Cache miss for opportunities. Querying the database.");
-    const opportunities = await OppModel.find({}).populate("interestedMembers.memberId").sort({ createdAt: -1 });
+    const opportunities = await OppModel.find({})
+      .populate("interestedMembers.memberId")
+      .sort({ createdAt: -1 });
     await redisClient.setEx("opportunities", 30, JSON.stringify(opportunities));
     console.log("Opportunities cached in Redis.");
 
@@ -242,17 +244,25 @@ export const getMemberEnrolledChapters = async (req, res) => {
           chapter.hmrsChapterId.toString()
         );
       })
-      .map((chapter) => ({
-        // Format the chapter details as per frontend expectation
-        _id: chapter._id,
-        hmrsChapterId: chapter.hmrsChapterId,
-        chapterName: chapter.chapterName,
-        zone: chapter.zone,
-        description: chapter.description,
-        chapterLeadName: chapter.chapterLeadName,
-        chapterLeadImage: chapter.image, // Assuming 'image' from Chapter model is 'chapterLeadImage' on frontend
-        // Add any other fields your frontend expects for a chapter
-      }));
+      .map((chapter) => {
+        // Split members by role
+        const members = chapter.members.filter((m) => m.role === "member");
+        const committees = chapter.members.filter(
+          (m) => m.role === "committee"
+        );
+
+        return {
+          _id: chapter._id,
+          hmrsChapterId: chapter.hmrsChapterId,
+          chapterName: chapter.chapterName,
+          zone: chapter.zone,
+          description: chapter.description,
+          chapterLeadName: chapter.chapterLeadName,
+          chapterLeadImage: chapter.image,
+          members,
+          committees,
+        };
+      });
 
     // If no chapters are enrolled
     if (

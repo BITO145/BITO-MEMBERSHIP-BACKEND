@@ -3,6 +3,7 @@ import Event from "../models/eventModel.js";
 import Chapter from "../models/chapterModel.js";
 import OppModel from "../models/OppModel.js";
 import axios from "axios";
+import { redisClient } from "../services/redisClient.js";
 
 const hmrsUrl = process.env.HMRS_URL;
 
@@ -52,6 +53,13 @@ export const enrollMemberInChapter = async (req, res) => {
       { hmrsChapterId: chapterId },
       { $addToSet: { members: payload } }
     );
+
+    try {
+      await redisClient.del("chapters");
+      console.log("🧹 Redis cache for 'chapters' invalidated.");
+    } catch (err) {
+      console.warn("⚠️ Failed to invalidate Redis cache:", err.message);
+    }
 
     // Step 6: Notify HMRS portal (unchanged sensitive functionality)
     await axios.post(
@@ -208,7 +216,6 @@ export const enrollMemberInEvent = async (req, res) => {
 };
 
 // controllers/enrollmentController.js
-
 export const enrollMemberInOpp = async (req, res) => {
   try {
     const memberId = req.user._id; // from auth middleware
