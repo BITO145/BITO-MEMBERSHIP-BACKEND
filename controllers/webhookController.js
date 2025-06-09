@@ -225,7 +225,8 @@ export const receiveOpp = async (req, res) => {
     const {
       hrmsOppId,
       oppName,
-      oppDate,
+      startDate,
+      endDate,
       location,
       image,
       description,
@@ -235,7 +236,8 @@ export const receiveOpp = async (req, res) => {
     const newOpp = new OppModel({
       hrmsOppId,
       oppName,
-      oppDate,
+      startDate,
+      endDate,
       location,
       image,
       description,
