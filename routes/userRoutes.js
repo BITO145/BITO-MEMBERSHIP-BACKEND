@@ -4,6 +4,7 @@ import {
   getEvents,
   getMemberEnrolledEvents,
   getMembersCount,
+  getOpportunities,
   updateProfile,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -14,6 +15,8 @@ const router = express.Router();
 router.get("/events", protect, getEvents);
 
 router.get("/chapters", protect, getChapters);
+
+router.get("/opportunities", protect, getOpportunities);
 
 router.get("/members", getMembersCount);
 

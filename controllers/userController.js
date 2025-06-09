@@ -5,6 +5,7 @@ import { redisClient } from "../services/redisClient.js";
 import cloudinary from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
+import OppModel from "../models/OppModel.js";
 
 // controllers/eventController.js
 export const getEvents = async (req, res, next) => {
@@ -75,6 +76,50 @@ export const getChapters = async (req, res) => {
   } catch (error) {
     console.error("Error fetching chapters:", error);
     res.status(500).json({ error: "Server error fetching chapters." });
+  }
+};
+
+export const getOpportunities = async (req, res) => {
+  try {
+    const userId = req.user._id; // Get current logged-in user ID
+
+    const cachedOpportunities = await redisClient.get("opportunities");
+    if (cachedOpportunities) {
+      console.log("Cache hit for opportunities.");
+      const opportunities = JSON.parse(cachedOpportunities);
+
+      // Enrich with isMember dynamically
+      const enrichedOpportunities = opportunities.map((opportunity) => {
+        const isMember = opportunity.interestedMembers?.some(
+          // Added optional chaining
+          (member) =>
+            member.memberId && member.memberId.toString() === userId.toString() // Added member.memberId check
+        );
+        return { ...opportunity, isMember };
+      });
+
+      return res.status(200).json({ opportunities: enrichedOpportunities });
+    }
+
+    console.log("Cache miss for opportunities. Querying the database.");
+    const opportunities = await OppModel.find({}).populate("interestedMembers.memberId").sort({ createdAt: -1 });
+    await redisClient.setEx("opportunities", 30, JSON.stringify(opportunities));
+    console.log("Opportunities cached in Redis.");
+
+    // Enrich with isMember dynamically
+    const enrichedOpportunities = opportunities.map((opportunity) => {
+      const isMember = opportunity.interestedMembers?.some(
+        // Optional chaining already present, ensure memberId check
+        (member) =>
+          member.memberId && member.memberId.toString() === userId.toString() // Added member.memberId check
+      );
+      return { ...opportunity.toObject(), isMember }; // Ensure it's a plain object
+    });
+
+    res.status(200).json({ opportunities: enrichedOpportunities });
+  } catch (error) {
+    console.error("Error fetching opportunities:", error);
+    res.status(500).json({ error: "Server error fetching opportunities." });
   }
 };
 
@@ -214,12 +259,10 @@ export const getMemberEnrolledChapters = async (req, res) => {
       !enrolledChaptersWithDetails ||
       enrolledChaptersWithDetails.length === 0
     ) {
-      return res
-        .status(200)
-        .json({
-          chapters: [],
-          message: "No enrolled chapters found for this member.",
-        });
+      return res.status(200).json({
+        chapters: [],
+        message: "No enrolled chapters found for this member.",
+      });
     }
 
     res.status(200).json({ chapters: enrolledChaptersWithDetails });

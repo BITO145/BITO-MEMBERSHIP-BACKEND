@@ -207,39 +207,52 @@ export const enrollMemberInEvent = async (req, res) => {
   }
 };
 
+// controllers/enrollmentController.js
+
 export const enrollMemberInOpp = async (req, res) => {
   try {
     const memberId = req.user._id; // from auth middleware
     const { hrmsOppId } = req.body;
 
-    if (!hrmsOppId)
+    if (!hrmsOppId) {
       return res.status(400).json({ error: "Opportunity ID is required." });
+    }
 
     const member = await Member.findById(memberId);
-    if (!member) return res.status(404).json({ error: "Member not found." });
+    if (!member) {
+      return res.status(404).json({ error: "Member not found." });
+    }
 
     const opportunity = await OppModel.findOne({ hrmsOppId });
-    if (!opportunity)
+    if (!opportunity) {
       return res.status(404).json({ error: "Opportunity not found." });
+    }
 
-    // Check if already enrolled
-    if (opportunity.interestedMembers.includes(memberId)) {
+    // Check if already enrolled: Using .some() with toString() for comparison
+    if (
+      opportunity.interestedMembers.some(
+        (id) => id.toString() === memberId.toString()
+      )
+    ) {
       return res
         .status(409)
         .json({ error: "Already enrolled in this opportunity." });
     }
 
-    // 1️⃣ Add member to opportunity
+    // 1️⃣ Add member's ObjectId directly to opportunity's interestedMembers array
     opportunity.interestedMembers.push(memberId);
     await opportunity.save();
 
-    // 2️⃣ Add opportunity to member
+    // 2️⃣ Add opportunity to member's opportunitiesEnrolled array
     member.opportunitiesEnrolled = member.opportunitiesEnrolled || [];
-    member.opportunitiesEnrolled.push(opportunity._id);
+    // Prevent duplicate entries for member.opportunitiesEnrolled
+    if (!member.opportunitiesEnrolled.includes(opportunity._id)) {
+      member.opportunitiesEnrolled.push(opportunity._id);
+    }
     await member.save();
 
-    // 3️⃣ Webhook to Admin Portal to update their `interestedMembers` list
-    await axios.post("http://localhost:5000/sa/webhook/opportunity-enroll", {
+    // 3️⃣ Webhook to Admin Portal
+    await axios.post(`${hmrsUrl}/sa/webhook/opportunity-enroll`, {
       hrmsOppId: opportunity.hrmsOppId,
       memberId: member._id.toString(),
       name: member.name,
