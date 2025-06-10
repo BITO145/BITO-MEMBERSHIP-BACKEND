@@ -28,7 +28,6 @@ export const receiveEventWebhook = async (req, res) => {
     if (
       !hmrsEventId ||
       !eventName ||
-      !link ||
       !eventStartTime ||
       !eventEndTime ||
       !eventDate ||
