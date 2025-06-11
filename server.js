@@ -9,6 +9,9 @@ import rateLimit from "express-rate-limit";
 import { createClient } from "redis";
 import webhookRoutes from "./routes/webhookRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import planRoutes from "./routes/planRoute.js";
+import adminAnalyticsRoutes from "./routes/adminAnalyticsRoute.js";
+import paymentRoutes from "./routes/payments.js";
 import connectToCloudinary from "./config/cloudinary.js";
 
 dotenv.config();
@@ -50,6 +53,9 @@ app.use("/auth", apiLimiter, authRoutes);
 app.use("/member", apiLimiter, enrollRoutes);
 app.use("/webhook", webhookRoutes);
 app.use("/receive", userRoutes);
+app.use("/plans", planRoutes);
+app.use("/payment", paymentRoutes);
+app.use("/admin", adminAnalyticsRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 8080;
