@@ -19,8 +19,13 @@ const memberSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  // membershipLevel: {
+  //   type: String,
+  // },
   membershipLevel: {
     type: String,
+    enum: ["basic", "silver", "gold", "platinum", "diamond"],
+    default: "basic",
   },
   chapterMemberships: [
     {
