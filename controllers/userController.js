@@ -38,6 +38,33 @@ export const getEvents = async (req, res, next) => {
   }
 };
 
+export const getPastEvents = async (req, res) => {
+  try {
+    const cached = await redisClient.get("pastEvents");
+    if (cached) {
+      return res.status(200).json({ pastEvents: JSON.parse(cached) });
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize date
+    const pastEvents = await Event.find({ eventDate: { $lt: today } })
+      .sort({ eventDate: -1 })
+      .populate({
+        path: "chapter",
+        select: "chapterName", // ✅ Only bring the name
+      });
+
+    if (!pastEvents || pastEvents.length === 0) {
+      return res.status(200).json({ message: "No past events" });
+    }
+
+    await redisClient.setEx("pastEvents", 10, JSON.stringify(pastEvents));
+    res.status(200).json({ pastEvents });
+  } catch (err) {
+    console.error("Error fetching past events:", err);
+    res.status(500).json({ error: "Server error fetching past events." });
+  }
+};
+
 export const getChapters = async (req, res) => {
   try {
     const userId = req.user._id; // 👈 Get current logged-in user ID

@@ -5,6 +5,7 @@ import {
   getMemberEnrolledEvents,
   getMembersCount,
   getOpportunities,
+  getPastEvents,
   getUserTransactions,
   updateProfile,
 } from "../controllers/userController.js";
@@ -14,6 +15,8 @@ import upload from "../middleware/multer.js";
 const router = express.Router();
 
 router.get("/events", protect, getEvents);
+
+router.get("/past-events", protect, getPastEvents);
 
 router.get("/chapters", protect, getChapters);
 
