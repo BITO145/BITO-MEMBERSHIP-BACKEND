@@ -164,11 +164,9 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const token = req.cookies.token;
-    console.log("Token:", token, "Type:", typeof token);
 
     if (token) {
       const redisKey = "bl_" + String(token);
-      console.log("Blacklisting token with key:", redisKey);
 
       const keyStr = String(redisKey);
       const tokenStr = String(token);

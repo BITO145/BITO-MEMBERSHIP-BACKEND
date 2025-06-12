@@ -107,7 +107,6 @@ export const receiveEventWebhook = async (req, res) => {
       }
     );
 
-    console.log("✅ Event webhook received and stored:", newEvent);
 
     res.status(201).json({
       message: "Event successfully received and stored.",
@@ -163,7 +162,6 @@ export const receiveChapterWebhook = async (req, res) => {
       EX: 3600,
     });
 
-    console.log("Received chapter webhook and processed:", chapter);
     res.status(201).json({
       message: "Chapter successfully received and stored.",
       chapter,
@@ -270,14 +268,8 @@ export const deleteChapter = async (req, res) => {
       return res.status(404).json({ error: "Chapter not found." });
     }
 
-    console.log(
-      "🟢 Deleting chapter with hmrsChapterId (used in members):",
-      chapter.hmrsChapterId
-    );
-
     // Step 2: Delete the chapter itself
     await Chapter.deleteOne({ _id: chapter._id });
-    console.log("✅ Chapter deleted from Chapter collection.");
 
     res.status(200).json({
       message: `Chapter with hmrsChapterId ${hmrsChapterId} deleted successfully.`,
@@ -325,9 +317,6 @@ export const deleteEvent = async (req, res) => {
         .status(404)
         .json({ error: "Chapter not found using hmrsChapterId." });
     }
-
-    console.log("✅ Deleted event:", deletedEvent._id);
-    console.log("✅ Updated chapter:", updatedChapter.chapterName);
 
     res.status(200).json({
       message: "Event deleted successfully from membership portal.",
