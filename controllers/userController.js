@@ -6,6 +6,7 @@ import cloudinary from "cloudinary";
 import fs from "fs";
 import mongoose from "mongoose";
 import OppModel from "../models/OppModel.js";
+import Transaction from "../models/Transaction.js";
 
 // controllers/eventController.js
 export const getEvents = async (req, res, next) => {
@@ -273,5 +274,54 @@ export const getMemberEnrolledChapters = async (req, res) => {
   } catch (err) {
     console.error("Error in getMemberEnrolledChapters:", err);
     res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+};
+
+export const getUserTransactions = async (req, res) => {
+  const userId = req.user._id;
+
+  // parse & clamp pagination params
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+  const skip = (page - 1) * limit;
+
+  try {
+    // fetch both the paginated docs and total count in parallel
+    const [transactions, totalCount] = await Promise.all([
+      Transaction.find({ user: userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .select([
+          "orderId",
+          "paymentId",
+          "amount",
+          "status",
+          "failureReason",
+          "paidAt",
+          "cancelledAt",
+          "createdAt",
+        ])
+        .populate(
+          "plan",
+          "name price durationDays" // ensure this matches your membershipPlan schema
+        )
+        .lean()
+        .exec(),
+      Transaction.countDocuments({ user: userId }),
+    ]);
+
+    return res.status(200).json({
+      page,
+      limit,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      transactions,
+    });
+  } catch (err) {
+    console.error("Error fetching user transactions:", err);
+    return res.status(500).json({
+      error: "Server error fetching your transactions.",
+    });
   }
 };
