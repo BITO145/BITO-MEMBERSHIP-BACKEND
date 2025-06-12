@@ -5,6 +5,7 @@ import {
   getMemberEnrolledEvents,
   getMembersCount,
   getOpportunities,
+  getUserTransactions,
   updateProfile,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -23,5 +24,7 @@ router.get("/members", getMembersCount);
 router.get("/:memberId/events", protect, getMemberEnrolledEvents);
 
 router.post("/update", protect, upload.single("image"), updateProfile);
+
+router.get("/txn", protect, getUserTransactions);
 
 export default router;
