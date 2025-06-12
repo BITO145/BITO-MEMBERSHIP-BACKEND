@@ -292,13 +292,26 @@ export const getUserTransactions = async (req, res) => {
   const skip = (page - 1) * limit;
 
   try {
-    // run both queries in parallel
+    // fetch both the paginated docs and total count in parallel
     const [transactions, totalCount] = await Promise.all([
       Transaction.find({ user: userId })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate("plan", "name price duration") // only these plan fields
+        .select([
+          "orderId",
+          "paymentId",
+          "amount",
+          "status",
+          "failureReason",
+          "paidAt",
+          "cancelledAt",
+          "createdAt",
+        ])
+        .populate(
+          "plan",
+          "name price durationDays" // ensure this matches your membershipPlan schema
+        )
         .lean()
         .exec(),
       Transaction.countDocuments({ user: userId }),
