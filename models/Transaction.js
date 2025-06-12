@@ -42,6 +42,11 @@ const transactionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    failedAt: {
+      // ← NEW
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
