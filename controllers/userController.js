@@ -38,13 +38,39 @@ export const getEvents = async (req, res, next) => {
   }
 };
 
+export const getPastEvents = async (req, res) => {
+  try {
+    const cached = await redisClient.get("pastEvents");
+    if (cached) {
+      return res.status(200).json({ pastEvents: JSON.parse(cached) });
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize date
+    const pastEvents = await Event.find({ eventDate: { $lt: today } })
+      .sort({ eventDate: -1 })
+      .populate({
+        path: "chapter",
+        select: "chapterName", // ✅ Only bring the name
+      });
+
+    if (!pastEvents || pastEvents.length === 0) {
+      return res.status(200).json({ message: "No past events" });
+    }
+
+    await redisClient.setEx("pastEvents", 10, JSON.stringify(pastEvents));
+    res.status(200).json({ pastEvents });
+  } catch (err) {
+    console.error("Error fetching past events:", err);
+    res.status(500).json({ error: "Server error fetching past events." });
+  }
+};
+
 export const getChapters = async (req, res) => {
   try {
     const userId = req.user._id; // 👈 Get current logged-in user ID
 
     const cachedChapters = await redisClient.get("chapters");
     if (cachedChapters) {
-      console.log("Cache hit for chapters.");
       const chapters = JSON.parse(cachedChapters);
 
       // ✅ Enrich with isMember dynamically
@@ -58,12 +84,10 @@ export const getChapters = async (req, res) => {
       return res.status(200).json({ chapters: enrichedChapters });
     }
 
-    console.log("Cache miss for chapters. Querying the database.");
     const chapters = await Chapter.find({})
       .populate("events") // 👈 Add populate here
       .sort({ createdAt: -1 });
     await redisClient.setEx("chapters", 30, JSON.stringify(chapters));
-    console.log("Chapters cached in Redis.");
 
     // ✅ Enrich with isMember dynamically
     const enrichedChapters = chapters.map((chapter) => {
@@ -86,7 +110,6 @@ export const getOpportunities = async (req, res) => {
 
     const cachedOpportunities = await redisClient.get("opportunities");
     if (cachedOpportunities) {
-      console.log("Cache hit for opportunities.");
       const opportunities = JSON.parse(cachedOpportunities);
 
       // Enrich with isMember dynamically
@@ -102,12 +125,10 @@ export const getOpportunities = async (req, res) => {
       return res.status(200).json({ opportunities: enrichedOpportunities });
     }
 
-    console.log("Cache miss for opportunities. Querying the database.");
     const opportunities = await OppModel.find({})
       .populate("interestedMembers.memberId")
       .sort({ createdAt: -1 });
     await redisClient.setEx("opportunities", 30, JSON.stringify(opportunities));
-    console.log("Opportunities cached in Redis.");
 
     // Enrich with isMember dynamically
     const enrichedOpportunities = opportunities.map((opportunity) => {

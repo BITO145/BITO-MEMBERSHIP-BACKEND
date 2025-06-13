@@ -13,6 +13,7 @@ import planRoutes from "./routes/planRoute.js";
 import adminAnalyticsRoutes from "./routes/adminAnalyticsRoute.js";
 import paymentRoutes from "./routes/payments.js";
 import connectToCloudinary from "./config/cloudinary.js";
+import { setupMembershipExpiryCron } from "./services/cronJobs.js";
 
 dotenv.config();
 
@@ -56,6 +57,9 @@ app.use("/receive", userRoutes);
 app.use("/plans", planRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/admin", adminAnalyticsRoutes);
+
+// Cron job to handle membership expiry
+setupMembershipExpiryCron();
 
 // Start the server
 const PORT = process.env.PORT || 8080;

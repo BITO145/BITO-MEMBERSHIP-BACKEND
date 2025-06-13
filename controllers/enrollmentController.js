@@ -56,7 +56,6 @@ export const enrollMemberInChapter = async (req, res) => {
 
     try {
       await redisClient.del("chapters");
-      console.log("🧹 Redis cache for 'chapters' invalidated.");
     } catch (err) {
       console.warn("⚠️ Failed to invalidate Redis cache:", err.message);
     }
