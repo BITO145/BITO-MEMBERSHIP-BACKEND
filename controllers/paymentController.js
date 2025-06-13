@@ -28,6 +28,8 @@ export const createOrder = async (req, res) => {
       plan: planId,
       orderId: order.id,
       amount: plan.price,
+      prevLevel: (await Member.findById(userId)).membershipLevel,
+      prevExpiry: (await Member.findById(userId)).membershipExpiryDate,
       status: "created",
     });
     await Member.findByIdAndUpdate(userId, { paymentStatus: "pending" });
@@ -145,7 +147,17 @@ export const cancelPayment = async (req, res) => {
     // if already captured on Razorpay, refund it
     if (tx.paymentId) {
       try {
+        // console.log("entering try block in cnacel payment");
         await razorpay.payments.refund(tx.paymentId, { speed: "normal" });
+        tx.status = "refunded";
+        tx.refundedAt = new Date();
+        await tx.save();
+        await Member.findByIdAndUpdate(tx.user, {
+          membershipLevel: tx.prevLevel,
+          membershipExpiryDate: tx.prevExpiry,
+          paymentStatus: "cancelled",
+        });
+        // console.log("payment refunded");
       } catch (refundErr) {
         console.error("Refund error:", refundErr);
         // continue to mark cancelled anyway
@@ -153,7 +165,9 @@ export const cancelPayment = async (req, res) => {
     }
 
     if (tx.status !== "paid") {
+      console.log(tx.status);
       tx.status = "cancelled";
+      console.log(tx.status, "after");
       tx.cancelledAt = new Date();
       await tx.save();
       await Member.findByIdAndUpdate(userId, { paymentStatus: "cancelled" });
@@ -191,6 +205,8 @@ export const handleWebhook = async (req, res) => {
     const evt = req.body.event;
     const paymentEntity = req.body.payload.payment?.entity;
     const orderEntity = req.body.payload.order?.entity;
+    const refundEntity = req.body.payload.refund?.entity;
+    console.log("thsi is refund entity", refundEntity);
 
     switch (evt) {
       case "payment.captured":
@@ -199,6 +215,12 @@ export const handleWebhook = async (req, res) => {
       case "payment.failed":
         await handlePaymentFailed(paymentEntity);
         break;
+
+      case "refund.created":
+      case "refund.processed":
+        if (refundEntity) {
+          await handlePaymentRefunded(refundEntity);
+        }
       case "order.paid":
         await handleOrderPaid(orderEntity);
         break;
@@ -245,6 +267,29 @@ async function handlePaymentFailed(payment) {
   await Member.findByIdAndUpdate(tx.user, { paymentStatus: "failed" });
 }
 
+async function handlePaymentRefunded(refund) {
+  console.log("inside payment refunded controller");
+  // refund.payment_id links back to the original payment
+  const tx = await Transaction.findOne({ paymentId: refund.payment_id });
+  if (!tx || tx.status === "refunded") return;
+
+  tx.status = "refunded";
+  tx.refundedAt = new Date(refund.created_at * 1000);
+  await tx.save();
+
+  // roll back the member
+  await Member.findByIdAndUpdate(tx.user, {
+    membershipLevel: tx.prevLevel,
+    membershipExpiryDate: tx.prevExpiry,
+    paymentStatus: "cancelled",
+  });
+}
+
 async function handleOrderPaid(order) {
+  if (!order) {
+    console.warn("handleOrderPaid called with no order payload");
+    return;
+  }
   console.log(`Webhook Order Paid: ${order.id}`);
+  // …etc…
 }

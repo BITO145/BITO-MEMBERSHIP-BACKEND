@@ -25,9 +25,18 @@ const transactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    prevLevel: {
+      type: String,
+      enum: ["basic", "silver", "gold", "platinum", "diamond"],
+      required: true,
+    },
+    prevExpiry: {
+      type: Date,
+      default: null,
+    },
     status: {
       type: String,
-      enum: ["created", "pending", "paid", "failed", "cancelled"],
+      enum: ["created", "pending", "paid", "failed", "cancelled", "refunded"],
       default: "created",
     },
     failureReason: {
@@ -43,6 +52,11 @@ const transactionSchema = new mongoose.Schema(
       default: null,
     },
     failedAt: {
+      // ← NEW
+      type: Date,
+      default: null,
+    },
+    refundedAt: {
       // ← NEW
       type: Date,
       default: null,
