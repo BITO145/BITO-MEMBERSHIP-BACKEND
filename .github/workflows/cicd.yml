@@ -21,15 +21,28 @@ jobs:
       - name: Publish Image to Docker Hub
         run: docker push bitoorg/bito_membership_client_backend:latest
 
-  deploy:
+  deploy:   # <-- This must be indented under `jobs:`, not at the root level
     needs: build
-    runs-on: self-hosted 
+    runs-on: self-hosted
     steps:
-      - name: Pull image from Docker Hub
+      - name: Debug Step 1 - Start
+        run: echo "Starting deploy step"
+
+      - name: Debug Step 2 - Whoami
+        run: whoami
+
+      - name: Debug Step 3 - Docker version
+        run: docker --version
+
+      - name: Debug Step 4 - Docker pull
         run: docker pull bitoorg/bito_membership_client_backend:latest
 
-      - name: Delete old container
+      - name: Debug Step 5 - Remove old container
         run: docker rm -f nodejs-app-container || true
 
-      - name: Run Docker Container
-        run: docker run -d -p 4000:4000 --name nodejs-app-container -e MONGO_PASSWORD='${{ secrets.MONGO_PASSWORD }}' bitoorg/bito_membership_client_backend:latest
+      - name: Debug Step 6 - Run container
+        run: |
+          echo "Running docker container..."
+          docker run -d -p 4000:4000 --name nodejs-app-container \
+          -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
+          bitoorg/bito_membership_client_backend:latest
