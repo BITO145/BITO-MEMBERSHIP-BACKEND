@@ -28,7 +28,8 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5000",
       "http://localhost:5174",
-      "https://memebrshipclient.vercel.app",
+      "https://bito-membership-frontend-ilwd.vercel.app",
+      "http://16.171.5.177:4000",
     ],
     credentials: true,
   })
