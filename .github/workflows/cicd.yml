@@ -43,7 +43,7 @@ jobs:
       - name: Debug Step 6 - Run container with all envs
         run: |
           echo "Running docker container..."
-          docker run -d -p 4000:4000 --name nodejs-app-container \
+          docker run -d -p 8080:8080 --name nodejs-app-container \
             -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
             -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
             -e CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}" \
