@@ -1,6 +1,6 @@
 name: Deploy Node Application
 
-on: 
+on:
   push:
     branches:
       - main
@@ -16,12 +16,12 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t bitoorg/bito_membership_client_backend:latest .
+        run: docker build -t sidbansal2004/dock_mem_back:latest .
 
       - name: Publish Image to Docker Hub
-        run: docker push bitoorg/bito_membership_client_backend:latest
+        run: docker push sidbansal2004/dock_mem_back:latest
 
-  deploy:   # <-- This must be indented under `jobs:`, not at the root level
+  deploy:
     needs: build
     runs-on: self-hosted
     steps:
@@ -35,7 +35,7 @@ jobs:
         run: docker --version
 
       - name: Debug Step 4 - Docker pull
-        run: docker pull bitoorg/bito_membership_client_backend:latest
+        run: docker pull sidbansal2004/dock_mem_back:latest
 
       - name: Debug Step 5 - Remove old container
         run: docker rm -f nodejs-app-container || true
@@ -45,4 +45,4 @@ jobs:
           echo "Running docker container..."
           docker run -d -p 4000:4000 --name nodejs-app-container \
           -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
-          bitoorg/bito_membership_client_backend:latest
+          sidbansal2004/dock_mem_back:latest
