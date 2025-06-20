@@ -52,4 +52,9 @@ jobs:
             -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
             -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
             -e REDIS_URL="${{ secrets.REDIS_URL }}" \
+            -e SESSION_SECRET="${{ secrets.SESSION_SECRET }}" \
+            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            -e JWT_TIMEOUT="${{ secrets.JWT_TIMEOUT }}" \
+            -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
+            -e BACKEND_URL="${{ secrets.BACKEND_URL }}" \
             sidbansal2004/dock_mem_back:latest
