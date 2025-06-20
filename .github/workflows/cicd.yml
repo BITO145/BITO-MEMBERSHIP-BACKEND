@@ -50,4 +50,5 @@ jobs:
             -e CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}" \
             -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
             -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
+            -e REDIS_URL="${{ secrets.REDIS_URL }}" \
             sidbansal2004/dock_mem_back:latest
