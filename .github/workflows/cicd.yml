@@ -40,9 +40,14 @@ jobs:
       - name: Debug Step 5 - Remove old container
         run: docker rm -f nodejs-app-container || true
 
-      - name: Debug Step 6 - Run container
+      - name: Debug Step 6 - Run container with all envs
         run: |
           echo "Running docker container..."
           docker run -d -p 4000:4000 --name nodejs-app-container \
-          -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
-          sidbansal2004/dock_mem_back:latest
+            -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
+            -e CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}" \
+            -e CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}" \
+            -e CLOUDINARY_NAME="${{ secrets.CLOUDINARY_NAME }}" \
+            -e RAZORPAY_KEY_ID="${{ secrets.RAZORPAY_KEY_ID }}" \
+            -e RAZORPAY_KEY_SECRET="${{ secrets.RAZORPAY_KEY_SECRET }}" \
+            sidbansal2004/dock_mem_back:latest
