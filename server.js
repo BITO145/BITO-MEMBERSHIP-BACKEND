@@ -29,9 +29,10 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5000",
-      "https://bia-admin-backend-ilnm.vercel.app",
       "http://localhost:5174",
       "https://bito-membership-frontend-ilwd.vercel.app",
+      "https://bia-admin-backend-ilnm.vercel.app",
+      "https://bia-admin-frontend.vercel.app",
       "https://16.171.5.177:4000",
     ],
     credentials: true,
