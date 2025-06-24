@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import Member from "../models/memberModel.js";
 
+//this is cron jobs
 export const setupMembershipExpiryCron = () => {
   cron.schedule("0 0 * * *", async () => {
     console.log("Running daily membership expiry check...");
@@ -12,7 +13,7 @@ export const setupMembershipExpiryCron = () => {
         membershipLevel: { $ne: "basic" },
       });
 
-      console.log(expiredMembers)
+      console.log(expiredMembers);
 
       if (expiredMembers.length > 0) {
         console.log(`Found ${expiredMembers.length} expired memberships.`);
