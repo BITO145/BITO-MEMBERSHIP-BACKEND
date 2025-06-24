@@ -56,5 +56,9 @@ jobs:
             -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             -e JWT_TIMEOUT="${{ secrets.JWT_TIMEOUT }}" \
             -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
+            -e HMRS_URL="${{ secrets.HMRS_URL }}" \
+            -e NODE_ENV=production \
+            -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
             -e BACKEND_URL="${{ secrets.BACKEND_URL }}" \
             sidbansal2004/dock_mem_back:latest
