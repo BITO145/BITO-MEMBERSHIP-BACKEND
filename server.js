@@ -23,7 +23,7 @@ connectDB();
 connectToCloudinary();
 
 const app = express();
-
+//this is cors
 app.use(
   cors({
     origin: [
