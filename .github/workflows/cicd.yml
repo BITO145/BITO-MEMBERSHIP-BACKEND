@@ -45,7 +45,6 @@ jobs:
           echo "Running docker container..."
           docker run -d -p 4000:4000 --name nodejs-app-container \
             -e MONGO_PASSWORD="${{ secrets.MONGO_PASSWORD }}" \
-            -v /home/ubuntu/ssl-cert:/app/ssl-cert \
             -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
             -e CLOUDINARY_KEY="${{ secrets.CLOUDINARY_KEY }}" \
             -e CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}" \

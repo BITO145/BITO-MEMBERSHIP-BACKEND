@@ -68,17 +68,17 @@ setupMembershipExpiryCron();
 
 // Start the server
 const PORT = process.env.PORT || 4000;
-const sslOptions = {
-  key: fs.readFileSync("ssl-cert/key.pem"),
-  cert: fs.readFileSync("ssl-cert/cert.pem"),
-};
+// const sslOptions = {
+//   key: fs.readFileSync("ssl-cert/key.pem"),
+//   cert: fs.readFileSync("ssl-cert/cert.pem"),
+// };
 
-https.createServer(sslOptions, app).listen(PORT, () => {
-  console.log(`🔒 HTTPS Server is running on https://localhost:${PORT}`);
-});
-// app.listen(PORT, () => {
-//   console.log(`✅ Server is running on port ${PORT}`);
+// https.createServer(app).listen(PORT, () => {
+//   console.log(`🔒 HTTPS Server is running on https://localhost:${PORT}`);
 // });
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on port ${PORT}`);
+});
 
 app.get("/", (req, res) => {
   res.send("API is running 🟢");
