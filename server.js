@@ -30,10 +30,11 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5000",
       "http://localhost:5174",
-      "https://bito-membership-frontend-ilwd.vercel.app",
+      // "https://bito-membership-frontend-ilwd.vercel.app",
       "https://bia-admin-backend-ilnm.vercel.app",
       "https://bia-admin-frontend.vercel.app",
       "https://www.bitoindustriesassociation.com",
+      "https://bitoindustriesassociation.com",
     ],
     credentials: true,
   })
