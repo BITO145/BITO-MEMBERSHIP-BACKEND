@@ -33,7 +33,7 @@ app.use(
       "https://bito-membership-frontend-ilwd.vercel.app",
       "https://bia-admin-backend-ilnm.vercel.app",
       "https://bia-admin-frontend.vercel.app",
-      "https://16.171.5.177:4000",
+      "https://www.bitoindustriesassociation.com",
     ],
     credentials: true,
   })
