@@ -6,7 +6,7 @@ import axios from "axios";
 import { redisClient } from "../services/redisClient.js";
 
 const hmrsUrl = process.env.HMRS_URL;
-
+console.log(hmrsUrl);
 export const enrollMemberInChapter = async (req, res) => {
   try {
     const memberId = req.user._id;
