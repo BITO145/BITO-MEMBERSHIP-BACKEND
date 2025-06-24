@@ -51,7 +51,7 @@ export const googleAuth = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "None",
       secure: true,
       maxAge: 3600000, // e.g., 1 hour
     });
@@ -108,7 +108,7 @@ export const signup = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // only over HTTPS in production
-      sameSite: "strict",
+      sameSite: "None",
       secure: true,
       maxAge: 3600000, // e.g., 1 hour in milliseconds
     });
@@ -145,7 +145,7 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "None",
       secure: true,
       maxAge: 3600000,
     });
