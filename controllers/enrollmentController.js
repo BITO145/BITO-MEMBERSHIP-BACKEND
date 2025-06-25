@@ -92,11 +92,11 @@ export const enrollMemberInEvent = async (req, res) => {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // ❌ Restrict basic members
-    if (!member.membershipLevel || member.membershipLevel === "basic") {
+    // Check membership level
+    const allowedLevels = ["gold", "diamond", "platinum"];
+    if (!allowedLevels.includes(member.membershipLevel)) {
       return res.status(403).json({
-        error:
-          "Your membership level does not allow enrollment in opportunities.",
+        error: "Your membership level does not permit enrolling in events.",
       });
     }
 
@@ -227,6 +227,13 @@ export const enrollMemberInOpp = async (req, res) => {
     const member = await Member.findById(memberId);
     if (!member) {
       return res.status(404).json({ error: "Member not found." });
+    }
+    // ❌ Restrict basic members
+    if (!member.membershipLevel || member.membershipLevel === "basic") {
+      return res.status(403).json({
+        error:
+          "Your membership level does not allow enrollment in opportunities.",
+      });
     }
 
     const opportunity = await OppModel.findOne({ hrmsOppId });
