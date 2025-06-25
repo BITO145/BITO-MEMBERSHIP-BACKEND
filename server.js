@@ -63,7 +63,7 @@ app.use("/webhook", webhookRoutes);
 app.use("/receive", userRoutes);
 app.use("/plans", planRoutes);
 app.use("/payment", paymentRoutes);
-app.use("/admin", adminAnalyticsRoutes);
+app.use("/api/admin", adminAnalyticsRoutes);
 
 // Cron job to handle membership expiry
 setupMembershipExpiryCron();
