@@ -34,6 +34,7 @@ app.use(
       "https://bia-admin-backend-ilnm.vercel.app",
       "https://bia-admin-frontend.vercel.app",
       "https://www.bitoindustriesassociation.com",
+      "https://www.bitoindustriesassociation.com/api",
       "https://bitoindustriesassociation.com",
     ],
     credentials: true,
