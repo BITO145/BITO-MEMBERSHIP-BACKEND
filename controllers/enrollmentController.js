@@ -92,11 +92,11 @@ export const enrollMemberInEvent = async (req, res) => {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // Check membership level
-    const allowedLevels = ["gold", "diamond", "platinum"];
-    if (!allowedLevels.includes(member.membershipLevel)) {
+    // ❌ Restrict basic members
+    if (!member.membershipLevel || member.membershipLevel === "basic") {
       return res.status(403).json({
-        error: "Your membership level does not permit enrolling in events.",
+        error:
+          "Your membership level does not allow enrollment in opportunities.",
       });
     }
 

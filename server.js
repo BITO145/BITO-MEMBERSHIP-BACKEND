@@ -56,8 +56,8 @@ const apiLimiter = rateLimit({
 });
 
 app.use("/api/", apiLimiter);
-app.use("/auth", apiLimiter, authRoutes);
-app.use("/member", apiLimiter, enrollRoutes);
+app.use("/auth", authRoutes);
+app.use("/member", enrollRoutes);
 app.use("/webhook", webhookRoutes);
 app.use("/receive", userRoutes);
 app.use("/plans", planRoutes);
