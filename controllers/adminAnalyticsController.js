@@ -1,6 +1,6 @@
 import Transaction from "../models/Transaction.js";
 // import membershipPlan from "../models/membershipPlan.js";
-// import Member from "../models/memberModel.js";
+import Member from "../models/memberModel.js";
 // import mongoose from "mongoose";
 
 /**
@@ -65,4 +65,27 @@ export const membershipTransactions = async (req, res) => {
   }));
 
   res.json(data);
+};
+
+export const getMembers = async (req, res) => {
+  try {
+    const members = await Member.find({})
+      .select("-password -verificationToken") // remove sensitive fields
+      .lean(); // optional: returns plain JS objects
+
+    res.status(200).json({ members });
+  } catch (error) {
+    console.error("Error fetching members:", error);
+    res.status(500).json({ error: "Failed to fetch members" });
+  }
+};
+
+export const memberProfile = async (req, res) => {
+  try {
+    const member = await Member.findById(req.params.id).lean();
+    if (!member) return res.status(404).json({ error: "Not found" });
+    res.status(200).json({ member });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch member" });
+  }
 };
