@@ -5,6 +5,8 @@ import { getGoogleAuthUrl } from "../utils/googleAuthUrl.js";
 import Member from "../models/memberModel.js";
 import { redisClient } from "../services/redisClient.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { sendResetEmail } from "../utils/sendEmail.js";
 
 const generateToken = (member) => {
   return jwt.sign(
@@ -14,6 +16,12 @@ const generateToken = (member) => {
       expiresIn: process.env.JWT_TIMEOUT,
     }
   );
+};
+
+export const generateResetToken = () => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  return { token, hashedToken };
 };
 
 const frontend = process.env.FRONTEND_URL;
@@ -206,5 +214,68 @@ export const checkAuth = async (req, res, next) => {
   } catch (error) {
     console.error("Auth verification error:", error);
     return res.status(401).json({ message: "Not authenticated" });
+  }
+};
+
+//forgot-password
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await Member.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { token, hashedToken } = generateResetToken();
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+    await user.save();
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    await sendResetEmail(email, resetLink);
+    console.log("Password Reset Link:", resetLink); // Replace with email later
+
+    return res.status(200).json({
+      message:
+        "Reset link generated. Check console (in production, use email).",
+    });
+  } catch (err) {
+    console.error("Forgot Password Error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Step 2: Reset password
+export const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  try {
+    const user = await Member.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Token invalid or expired" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("Reset Password Error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -65,6 +65,9 @@ const memberSchema = new mongoose.Schema({
       ref: "Event",
     },
   ],
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+
   connection: {
     type: String,
   },
