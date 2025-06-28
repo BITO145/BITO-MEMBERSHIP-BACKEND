@@ -57,6 +57,8 @@ jobs:
             -e JWT_TIMEOUT="${{ secrets.JWT_TIMEOUT }}" \
             -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
             -e HMRS_URL="${{ secrets.HMRS_URL }}" \
+            -e EMAIL_USER="${{ secrets.EMAIL_USER }}" \
+            -e EMAIL_PASS="${{ secrets.EMAIL_PASS }}" \
             -e NODE_ENV=production \
             -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
             -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
