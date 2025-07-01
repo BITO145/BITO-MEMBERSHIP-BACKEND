@@ -18,21 +18,31 @@ export const enrollMemberInChapter = async (req, res) => {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // Step 2: Check Membership Level
-    if (!member.membershipLevel || member.membershipLevel === "basic") {
-      return res.status(403).json({
-        error: "Your membership level does not allow enrollment in chapters.",
-      });
+    // Step 2: Fetch Chapter
+    const chapter = await Chapter.findOne({ hmrsChapterId: chapterId }).lean();
+    if (!chapter) {
+      return res.status(404).json({ error: "Chapter not found" });
     }
 
-    // Step 3: Update Member's chapterMemberships array
+    // Step 3: Apply logic
+    if (chapter.membershipRequired) {
+      // membership is required, so basic members cannot join
+      if (!member.membershipLevel || member.membershipLevel === "basic") {
+        return res.status(403).json({
+          error: "This chapter requires a higher membership level to enroll.",
+        });
+      }
+    }
+    // else membershipRequired is false → even basic member can join
+
+    // Step 4: Update Member's chapterMemberships array
     const updatedMember = await Member.findByIdAndUpdate(
       memberId,
       {
         $addToSet: {
           chapterMemberships: {
             chapterId,
-            role: "member", // default at enrollment
+            role: "member", // default role
             dateOfJoining: new Date(),
           },
         },
@@ -40,7 +50,7 @@ export const enrollMemberInChapter = async (req, res) => {
       { new: true }
     );
 
-    // Step 4: Prepare the payload (with explicit role!)
+    // Step 5: Add to Chapter.members sub-document
     const payload = {
       memberId: updatedMember._id,
       name: updatedMember.name,
@@ -48,7 +58,6 @@ export const enrollMemberInChapter = async (req, res) => {
       role: "member",
     };
 
-    // Step 5: Add to Chapter.members sub-document
     await Chapter.findOneAndUpdate(
       { hmrsChapterId: chapterId },
       { $addToSet: { members: payload } }
@@ -60,7 +69,7 @@ export const enrollMemberInChapter = async (req, res) => {
       console.warn("⚠️ Failed to invalidate Redis cache:", err.message);
     }
 
-    // Step 6: Notify HMRS portal (unchanged sensitive functionality)
+    // Step 6: Notify HMRS portal
     await axios.post(
       `${hmrsUrl}/sa/chapters/${chapterId}/enrollMember`,
       payload,
@@ -70,7 +79,7 @@ export const enrollMemberInChapter = async (req, res) => {
       }
     );
 
-    // Step 7: Send success response
+    // Step 7: Success response
     res.status(200).json({
       message: "Enrollment in chapter successful.",
       member: updatedMember,
@@ -86,26 +95,18 @@ export const enrollMemberInEvent = async (req, res) => {
     const memberId = req.user._id;
     const { eventId } = req.body;
 
+    // Validate eventId
+    if (!eventId) {
+      return res.status(400).json({ error: "eventId is required" });
+    }
+
     // Fetch member
     const member = await Member.findById(memberId).lean();
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // Check membership level
-    const allowedLevels = ["gold", "diamond", "platinum"];
-    if (!allowedLevels.includes(member.membershipLevel)) {
-      return res.status(403).json({
-        error: "Your membership level does not permit enrolling in events.",
-      });
-    }
-
-    // Validate eventId
-    if (!eventId) {
-      return res.status(400).json({ error: "eventId is required" });
-    }
-
-    // Fetch event and its chapter
+    // Fetch event
     const event = await Event.findById(eventId).lean();
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
@@ -113,6 +114,23 @@ export const enrollMemberInEvent = async (req, res) => {
 
     const hmrsEventId = event.hmrsEventId;
 
+    // Check membershipRequired flag
+    if (
+      event.membershipRequired === true ||
+      event.membershipRequired === "true"
+    ) {
+      // membership is required → basic members cannot join
+      const allowedLevels = ["gold", "diamond", "platinum"];
+      if (!allowedLevels.includes(member.membershipLevel)) {
+        return res.status(403).json({
+          error:
+            "Your membership level does not permit enrolling in this event.",
+        });
+      }
+    }
+    // else: membershipRequired is false → even basic members can join
+
+    // Fetch chapter to check if member is part of it
     const chapterDoc = await Chapter.findOne({
       hmrsChapterId: event.chapter.chapterId,
     }).lean();
@@ -123,7 +141,6 @@ export const enrollMemberInEvent = async (req, res) => {
       });
     }
 
-    // Check if member is part of the chapter
     const enrolledChapterIds = (member.chapterMemberships || []).map((cm) =>
       cm.chapterId.toString()
     );
@@ -134,7 +151,7 @@ export const enrollMemberInEvent = async (req, res) => {
       });
     }
 
-    // Prevent double-enrollment
+    // Prevent double enrollment
     const enrolledEvents = (member.eventsEnrolled || []).map((ev) =>
       ev.toString()
     );

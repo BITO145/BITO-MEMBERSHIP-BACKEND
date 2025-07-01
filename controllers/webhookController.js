@@ -107,7 +107,6 @@ export const receiveEventWebhook = async (req, res) => {
       }
     );
 
-
     res.status(201).json({
       message: "Event successfully received and stored.",
       event: newEvent,
@@ -131,10 +130,18 @@ export const receiveChapterWebhook = async (req, res) => {
       chapterLeadName,
       events,
       image,
+      membershipRequired,
     } = req.body;
 
     // Validate required fields
-    if (!hmrsChapterId || !chapterName || !zone || !chapterLeadName || !image) {
+    if (
+      !hmrsChapterId ||
+      !chapterName ||
+      !zone ||
+      !chapterLeadName ||
+      !image ||
+      typeof membershipRequired === "undefined"
+    ) {
       return res.status(400).json({
         error:
           "hmrsChapterId, chapterName, zone, chapterLeadName, and image are required.",
@@ -151,6 +158,8 @@ export const receiveChapterWebhook = async (req, res) => {
           description,
           chapterLeadName,
           events: events || [], // This will be set from the payload
+          membershipRequired:
+            membershipRequired === true || membershipRequired === "true",
           image: image || "",
         },
       },
