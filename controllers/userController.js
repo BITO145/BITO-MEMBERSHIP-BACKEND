@@ -227,7 +227,9 @@ export const getMemberEnrolledEvents = async (req, res) => {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    res.status(200).json({ events: member.eventsEnrolled });
+  //08-08-2025 res.status(200).json({ events: member.eventsEnrolled });
+
+  res.status(200).json({ eventsEnrolled: member.eventsEnrolled || [] });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
