@@ -30,6 +30,8 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5000",
       "http://localhost:5174",
+      "http://13.204.20.99",
+      "http://13.204.20.99:80",
       // "https://bito-membership-frontend-ilwd.vercel.app",
       "https://bia-admin-backend-ilnm.vercel.app",
       "https://bia-admin-frontend.vercel.app",
