@@ -47,3 +47,17 @@ export const getForms = (req, res) => {
       res.status(500).json({ error: "Failed to retrieve forms." })
     );
 };
+
+export const deleteForm = (req, res) => {
+  const formId = req.params.id;
+  Form.findByIdAndDelete(formId)
+    .then((form) => {
+      if (!form) {
+        return res.status(404).json({ error: "Form not found." });
+      }
+      res.status(200).json({ message: "Form deleted successfully." });
+    })
+    .catch((error) =>
+      res.status(500).json({ error: "Failed to delete form." })
+    );
+};

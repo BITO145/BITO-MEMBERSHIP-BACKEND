@@ -52,6 +52,7 @@ const formSchema = new mongoose.Schema(
       trim: true,
     },
   },
+  { timestamps: true }
 );
 
 export const Form = mongoose.model("Form", formSchema);
