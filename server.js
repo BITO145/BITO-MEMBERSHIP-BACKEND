@@ -14,6 +14,7 @@ import userRoutes from "./routes/userRoutes.js";
 import planRoutes from "./routes/planRoute.js";
 import adminAnalyticsRoutes from "./routes/adminAnalyticsRoute.js";
 import paymentRoutes from "./routes/payments.js";
+import formsRoutes from "./routes/forms.js";
 import connectToCloudinary from "./config/cloudinary.js";
 import { setupMembershipExpiryCron } from "./services/cronJobs.js";
 
@@ -32,6 +33,7 @@ app.use(
       "http://localhost:5174",
       "http://13.204.20.99",
       "http://13.204.20.99:80",
+      "https://bitoworld.in",
       // "https://bito-membership-frontend-ilwd.vercel.app",
       "https://bia-admin-backend-ilnm.vercel.app",
       "https://bia-admin-frontend.vercel.app",
@@ -66,6 +68,7 @@ app.use("/receive", userRoutes);
 app.use("/plans", planRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/api/admin", adminAnalyticsRoutes);
+app.use("/api/forms", formsRoutes);
 
 // Cron job to handle membership expiry
 setupMembershipExpiryCron();
